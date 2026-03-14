@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "runId": "2026-03-11T16-55-38-635Z",
+  "sourceDir": "/Users/manebrasil/Developer/Capybara Agent/lab/agent/filesystem/source",
+  "mode": "queue",
+  "processingMode": "standard",
+  "createdAt": "2026-03-11T16:55:38.635Z",
+  "updatedAt": "2026-03-11T16:55:38.638Z",
+  "queueStatus": "running",
+  "summary": {
+    "total": 7,
+    "completed": 0,
+    "failed": 0,
+    "pending": 6,
+    "inProgress": 1
+  },
+  "docs": [
+    {
+      "docId": "2022-combate-erosao-jd-novo-parelheiros-9f9eb3e2",
+      "fileName": "2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf",
+      "mode": "standard",
+      "status": "in_progress",
+      "attempts": 1,
+      "startedAt": "2026-03-11T16:55:38.636Z"
+    },
+    {
+      "docId": "2021-talude-rua-jose-martins-veiga-f345e9ef",
+      "fileName": "2021_Talude_Rua José Martins Veiga.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    },
+    {
+      "docId": "2023-deslizamento-rua-arnaldo-teixeira-mendes-1585fd3f",
+      "fileName": "2023_DESLIZAMENTO_RUA ARNALDO TEIXEIRA MENDES.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    },
+    {
+      "docId": "2023-erosao-das-margens-do-corrego-avenida-aricanduva-69edf641",
+      "fileName": "2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    },
+    {
+      "docId": "2023-escola-prof-esmeralda-salles-pereira-ramos-tremembe-35194ad7",
+      "fileName": "2023_ESCOLA_PROF_ESMERALDA_SALLES_PEREIRA_RAMOS_TREMEMBE.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    },
+    {
+      "docId": "2023-fornecimento-de-cafe-05a8f7a5",
+      "fileName": "2023_Fornecimento de café.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    },
+    {
+      "docId": "2023-instabilidade-de-talude-rua-jose-ferreira-paz-1e108c1e",
+      "fileName": "2023_INSTABILIDADE DE TALUDE_RUA JOSÉ FERREIRA PAZ.pdf",
+      "mode": "standard",
+      "status": "pending",
+      "attempts": 0
+    }
+  ]
+}

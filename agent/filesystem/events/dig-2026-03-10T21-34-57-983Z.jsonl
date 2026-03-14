@@ -1,0 +1,16 @@
+{"seq":1,"ts":"2026-03-10T21:34:57.984Z","event":{"type":"agent_step","label":"Iniciando dig (escavacao de leads)...","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-10T21:34:57.984Z","event":{"type":"agent_step","label":"Carregando previews de lab/source/.artifacts","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-10T21:34:57.989Z","event":{"type":"agent_step","label":"6 preview(s) carregado(s)","status":"completed"}}
+{"seq":4,"ts":"2026-03-10T21:34:57.989Z","event":{"type":"agent_step","label":"Analise incremental (um preview por vez)...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-10T21:34:57.989Z","event":{"type":"agent_step","label":"Documento 1/6: 2021_Talude_Rua José Martins Veiga.pdf","status":"in_progress"}}
+{"seq":6,"ts":"2026-03-10T21:35:04.003Z","event":{"type":"agent_step","label":"Documento 2/6: 2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf","status":"in_progress"}}
+{"seq":7,"ts":"2026-03-10T21:35:12.758Z","event":{"type":"agent_step","label":"Documento 3/6: 2023_INSTABILIDADE DE TALUDE_RUA JOSÉ FERREIRA PAZ.pdf","status":"in_progress"}}
+{"seq":8,"ts":"2026-03-10T21:35:23.799Z","event":{"type":"agent_step","label":"Documento 4/6: 2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf","status":"in_progress"}}
+{"seq":9,"ts":"2026-03-10T21:35:37.971Z","event":{"type":"agent_step","label":"Documento 5/6: 2023_ESCOLA_PROF_ESMERALDA_SALLES_PEREIRA_RAMOS_TREMEMBE.pdf","status":"in_progress"}}
+{"seq":10,"ts":"2026-03-10T21:36:01.649Z","event":{"type":"agent_step","label":"Documento 6/6: 2023_Fornecimento de café.pdf","status":"in_progress"}}
+{"seq":11,"ts":"2026-03-10T21:36:15.521Z","event":{"type":"agent_step","label":"Analise incremental concluida","status":"completed"}}
+{"seq":12,"ts":"2026-03-10T21:36:15.521Z","event":{"type":"agent_step","label":"Gerando linhas investigativas a partir das conclusoes...","status":"in_progress"}}
+{"seq":13,"ts":"2026-03-10T21:36:24.898Z","event":{"type":"agent_step","label":"Comparando com leads existentes e ranqueando top 3...","status":"in_progress"}}
+{"seq":14,"ts":"2026-03-10T21:36:30.324Z","event":{"type":"agent_step","label":"Dig concluido","status":"completed"}}
+{"seq":15,"ts":"2026-03-10T21:36:30.325Z","event":{"type":"file_change","path":"lab/agent/output/reports/dig-2026-03-10T21-36-30.md","changeType":"new","addedLines":24,"removedLines":0,"preview":"Relatorio dig com top 3 linhas e recomendacao."}}
+{"seq":16,"ts":"2026-03-10T21:36:30.325Z","event":{"type":"final_summary","title":"Proximos passos","lines":["Relatorio salvo em lab/agent/output/reports/dig-2026-03-10T21-36-30.md.","Para criar um lead a partir de uma das sugestoes, use: pnpm reverso create-lead --idea \"nome ou ideia do lead\"."]}}

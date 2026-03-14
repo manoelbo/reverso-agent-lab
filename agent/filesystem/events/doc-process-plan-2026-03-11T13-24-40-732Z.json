@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "runId": "2026-03-11T13-24-40-732Z",
+  "sourceDir": "/Users/manebrasil/Developer/Capybara Agent/lab/agent/filesystem/source",
+  "mode": "queue",
+  "processingMode": "standard",
+  "createdAt": "2026-03-11T13:24:40.732Z",
+  "updatedAt": "2026-03-11T13:37:41.945Z",
+  "queueStatus": "idle",
+  "summary": {
+    "total": 3,
+    "completed": 3,
+    "failed": 0,
+    "pending": 0,
+    "inProgress": 0
+  },
+  "docs": [
+    {
+      "docId": "2023-escola-prof-esmeralda-salles-pereira-ramos-tremembe-35194ad7",
+      "fileName": "2023_ESCOLA_PROF_ESMERALDA_SALLES_PEREIRA_RAMOS_TREMEMBE.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:24:40.734Z",
+      "finishedAt": "2026-03-11T13:29:10.861Z"
+    },
+    {
+      "docId": "2023-fornecimento-de-cafe-05a8f7a5",
+      "fileName": "2023_Fornecimento de café.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:29:10.862Z",
+      "finishedAt": "2026-03-11T13:33:03.633Z"
+    },
+    {
+      "docId": "2023-instabilidade-de-talude-rua-jose-ferreira-paz-1e108c1e",
+      "fileName": "2023_INSTABILIDADE DE TALUDE_RUA JOSÉ FERREIRA PAZ.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:33:03.635Z",
+      "finishedAt": "2026-03-11T13:37:41.944Z"
+    }
+  ]
+}

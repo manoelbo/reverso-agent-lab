@@ -1,0 +1,6 @@
+{"seq":1,"ts":"2026-03-12T18:01:41.583Z","event":{"type":"agent_step","label":"Iniciando deep-dive (escavacao aprofundada de leads)...","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T18:01:41.583Z","event":{"type":"agent_step","label":"Carregando previews de lab/agent/filesystem/source/.artifacts","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-12T18:01:41.591Z","event":{"type":"agent_step","label":"7 preview(s) carregado(s)","status":"completed"}}
+{"seq":4,"ts":"2026-03-12T18:01:41.591Z","event":{"type":"agent_step","label":"Analise incremental (um preview por vez)...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-12T18:01:41.591Z","event":{"type":"agent_step","label":"Documento 1/7: 2021_Talude_Rua José Martins Veiga.pdf","status":"in_progress"}}
+{"seq":6,"ts":"2026-03-12T18:01:47.610Z","event":{"type":"agent_step","label":"Documento 2/7: 2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf","status":"in_progress"}}

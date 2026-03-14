@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "savedAt": "2026-03-13T01:17:20.369Z",
+  "state": {
+    "leadSlug": "slope-instability-incidents",
+    "stage": "pre_persist",
+    "repairedPlan": {
+      "objective": "Identifier les incidents d'instabilité de pente et d'érosion à São Paulo, les parties responsables et les efforts d'atténuation à partir des documents fournis.",
+      "hypotheses": [
+        "Les incidents d'instabilité de pente et d'érosion sont récurrents à São Paulo.",
+        "Les pratiques de développement urbain ou les facteurs environnementaux exacerbent le risque d'instabilité des pentes.",
+        "Les efforts de réponse et de remédiation sont insuffisants ou retardés."
+      ],
+      "actions": [
+        {
+          "tool": "processSourceTool",
+          "capability": "read",
+          "rationale": "Lire et extraire les informations pertinentes de tous les documents sources pour identifier les incidents, les dates, les lieux, les parties impliquées et les causes.",
+          "expectedOutput": "Informations structurées sur chaque incident, y compris le type d'incident, la date, le lieu, les parties responsables, les causes et les mesures d'atténuation.",
+          "riskLevel": "low",
+          "estimatedCost": {
+            "tokens": 900,
+            "latencyMs": 2200
+          },
+          "input": {
+            "subcommand": "queue-status",
+            "docIds": [
+              "2023-erosao-das-margens-do-corrego-avenida-aricanduva-69edf641",
+              "2023-deslizamento-rua-arnaldo-teixeira-mendes-1585fd3f",
+              "2023-escola-prof-esmeralda-salles-pereira-ramos-tremembe-35194ad7",
+              "2022-combate-erosao-jd-novo-parelheiros-9f9eb3e2",
+              "2023-instabilidade-de-talude-rua-jose-ferreira-paz-1e108c1e",
+              "2021-talude-rua-jose-martins-veiga-f345e9ef",
+              "2023-fornecimento-de-cafe-05a8f7a5"
+            ]
+          }
+        }
+      ],
+      "successCriteria": [
+        "Toutes les informations pertinentes sur les incidents d'instabilité de pente et d'érosion sont extraites des documents.",
+        "Les parties responsables et les efforts d'atténuation sont identifiés pour chaque incident."
+      ],
+      "stopCriteria": [
+        "Toutes les informations requises ont été extraites et structurées."
+      ],
+      "confidenceTarget": 0.75
+    },
+    "loopProgress": {
+      "stopReason": "goal_reached",
+      "steps": 0,
+      "toolCalls": 0,
+      "confidence": 0.9
+    },
+    "gate": {
+      "approved": false,
+      "mode": "blocked",
+      "reason": "missing_explicit_persist_approval"
+    },
+    "reviewQueueIds": [],
+    "repairState": {
+      "needsRepair": false,
+      "reasons": []
+    }
+  }
+}

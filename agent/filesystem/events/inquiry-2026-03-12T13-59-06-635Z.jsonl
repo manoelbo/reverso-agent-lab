@@ -1,0 +1,2 @@
+{"seq":1,"ts":"2026-03-12T13:59:06.636Z","event":{"type":"agent_step","label":"Iniciando inquiry para lead: dispensa-licitacao-athru-engenharia","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T13:59:06.641Z","event":{"type":"agent_step","label":"Generating inquiry execution plan (plan -> execute -> verify)...","status":"in_progress"}}

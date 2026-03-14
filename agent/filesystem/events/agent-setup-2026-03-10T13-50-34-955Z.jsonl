@@ -1,0 +1,5 @@
+{"seq":1,"ts":"2026-03-10T13:50:34.959Z","event":{"type":"agent_step","label":"Atualizando instrucoes em output/agent.md","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-10T13:50:34.961Z","event":{"type":"file_change","path":"lab/agent/output/agent.md","changeType":"edited","addedLines":2,"removedLines":0,"preview":"Manter foco em allegations e findings vinculados por IDs"}}
+{"seq":3,"ts":"2026-03-10T13:50:34.962Z","event":{"type":"agent_step","label":"Instrucao adicionada","status":"completed","details":"lab/agent/output/agent.md"}}
+{"seq":4,"ts":"2026-03-10T13:50:34.962Z","event":{"type":"system_event","level":"info","message":"Log de eventos salvo em lab/agent/output/events/agent-setup-2026-03-10T13-50-34-955Z.jsonl"}}
+{"seq":5,"ts":"2026-03-10T13:50:34.962Z","event":{"type":"final_summary","title":"Atualizacao concluida","lines":["Historico de instrucoes atualizado.","Instrucoes ativas atualizadas para os proximos ciclos."]}}

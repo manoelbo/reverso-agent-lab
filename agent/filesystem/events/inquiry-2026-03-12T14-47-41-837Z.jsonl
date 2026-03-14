@@ -1,0 +1,23 @@
+{"seq":1,"ts":"2026-03-12T14:47:41.839Z","event":{"type":"agent_step","label":"Iniciando inquiry para lead: teste-smoke-estabilidade-inquiry-opencode","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T14:47:41.849Z","event":{"type":"agent_step","label":"Generating inquiry execution plan (plan -> execute -> verify)...","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-12T14:47:46.945Z","event":{"type":"system_event","level":"info","message":"PEV enabled: steps<=8, tools<=16, timeout=120000ms, threshold=0.65"}}
+{"seq":4,"ts":"2026-03-12T14:47:46.945Z","event":{"type":"agent_step","label":"Executing planned tool actions...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-12T14:47:46.946Z","event":{"type":"tool_call","tool":"processSourceTool","inputSummary":"{\"subcommand\":\"process_all_available_sources\"}"}}
+{"seq":6,"ts":"2026-03-12T14:47:46.948Z","event":{"type":"tool_result","tool":"processSourceTool","status":"error","outputSummary":"\"Argumento obrigatório ausente: --input \\\"<caminho-do-pdf>\\\"\"","durationMs":2,"retryCount":1,"errorCode":"runtime_exception"}}
+{"seq":7,"ts":"2026-03-12T14:47:46.948Z","event":{"type":"loop_budget_updated","step":1,"usage":{"steps":1,"toolCalls":1,"elapsedMs":3,"estimatedTokens":28},"budget":{"maxSteps":8,"maxToolCalls":16,"maxElapsedMs":120000}}}
+{"seq":8,"ts":"2026-03-12T14:47:46.949Z","event":{"type":"loop_verification_result","step":1,"ok":false,"confidence":0.35,"reason":"tool_error","gaps":["runtime_exception"]}}
+{"seq":9,"ts":"2026-03-12T14:47:46.949Z","event":{"type":"loop_stopped","step":1,"failures":1,"stopReason":"tool_error"}}
+{"seq":10,"ts":"2026-03-12T14:47:46.949Z","event":{"type":"agent_step","label":"PEV tool execution finished with stop_reason=tool_error","status":"blocked"}}
+{"seq":11,"ts":"2026-03-12T14:47:46.949Z","event":{"type":"agent_step","label":"Executando inquiry com LLM...","status":"in_progress"}}
+{"seq":12,"ts":"2026-03-12T14:48:17.364Z","event":{"type":"agent_step","label":"Cenario identificado: positive","status":"completed"}}
+{"seq":13,"ts":"2026-03-12T14:48:17.364Z","event":{"type":"agent_step","label":"Applying evidence gate (minConfidence=0.75)...","status":"in_progress"}}
+{"seq":14,"ts":"2026-03-12T14:48:17.374Z","event":{"type":"system_event","level":"info","message":"Evidence gate summary: persisted=1, review_queue=11"}}
+{"seq":15,"ts":"2026-03-12T14:48:17.374Z","event":{"type":"agent_step","label":"Running pre-write validation (schema + refs + language)...","status":"in_progress"}}
+{"seq":16,"ts":"2026-03-12T14:48:17.375Z","event":{"type":"agent_step","label":"Pre-write validation passed","status":"completed"}}
+{"seq":17,"ts":"2026-03-12T14:48:17.380Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-1.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":18,"ts":"2026-03-12T14:48:17.380Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-2.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":19,"ts":"2026-03-12T14:48:17.380Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-3.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":20,"ts":"2026-03-12T14:48:17.380Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/findings/finding-3.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Finding gerado pelo inquiry."}}
+{"seq":21,"ts":"2026-03-12T14:48:17.380Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/leads/lead-teste-smoke-estabilidade-inquiry-opencode.evidence-review.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Fila de revisão de evidências (weak/missing)."}}
+{"seq":22,"ts":"2026-03-12T14:48:17.381Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/leads/lead-teste-smoke-estabilidade-inquiry-opencode.md","changeType":"edited","addedLines":0,"removedLines":0,"preview":"# Conclusion atualizado com resultado da inquiry."}}
+{"seq":23,"ts":"2026-03-12T14:48:17.381Z","event":{"type":"final_summary","title":"Inquiry concluida","lines":["Stop reason: tool_error","Confidence: 0.90","Lead atualizado: lab/agent/filesystem/investigation/leads/lead-teste-smoke-estabilidade-inquiry-opencode.md","Allegations: 3","Findings: 1","Review queue (weak/missing): 11","Resultado consolidado no lead."]}}

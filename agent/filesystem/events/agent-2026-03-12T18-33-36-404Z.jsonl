@@ -1,0 +1,3 @@
+{"seq":1,"ts":"2026-03-12T18:33:39.651Z","event":{"type":"agent_step","label":"Mensagem recebida em modo conversacional","status":"in_progress","details":"pode fazer a investigação dos 3 leads"}}
+{"seq":2,"ts":"2026-03-12T18:33:39.652Z","event":{"type":"system_event","level":"info","message":"Roteamento: ask_clarify (no active session)"}}
+{"seq":3,"ts":"2026-03-12T18:33:39.652Z","event":{"type":"final_summary","title":"Preciso de confirmacao","lines":["Nao existe sessao deep-dive ativa para continuar neste momento.","Se quiser, posso iniciar agora com: \"analise as fontes e sugira leads\"."]}}

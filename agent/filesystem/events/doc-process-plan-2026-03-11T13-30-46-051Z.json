@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "runId": "2026-03-11T13-30-46-051Z",
+  "sourceDir": "/Users/manebrasil/Developer/Capybara Agent/lab/agent/filesystem/source",
+  "mode": "queue",
+  "processingMode": "standard",
+  "createdAt": "2026-03-11T13:30:46.051Z",
+  "updatedAt": "2026-03-11T13:53:02.014Z",
+  "queueStatus": "idle",
+  "summary": {
+    "total": 7,
+    "completed": 7,
+    "failed": 0,
+    "pending": 0,
+    "inProgress": 0
+  },
+  "docs": [
+    {
+      "docId": "2022-combate-erosao-jd-novo-parelheiros-9f9eb3e2",
+      "fileName": "2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:30:46.054Z",
+      "finishedAt": "2026-03-11T13:36:57.313Z"
+    },
+    {
+      "docId": "2021-talude-rua-jose-martins-veiga-f345e9ef",
+      "fileName": "2021_Talude_Rua José Martins Veiga.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:36:57.314Z",
+      "finishedAt": "2026-03-11T13:40:42.114Z"
+    },
+    {
+      "docId": "2023-deslizamento-rua-arnaldo-teixeira-mendes-1585fd3f",
+      "fileName": "2023_DESLIZAMENTO_RUA ARNALDO TEIXEIRA MENDES.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:40:42.115Z",
+      "finishedAt": "2026-03-11T13:44:26.160Z"
+    },
+    {
+      "docId": "2023-erosao-das-margens-do-corrego-avenida-aricanduva-69edf641",
+      "fileName": "2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:44:26.160Z",
+      "finishedAt": "2026-03-11T13:47:32.602Z"
+    },
+    {
+      "docId": "2023-escola-prof-esmeralda-salles-pereira-ramos-tremembe-35194ad7",
+      "fileName": "2023_ESCOLA_PROF_ESMERALDA_SALLES_PEREIRA_RAMOS_TREMEMBE.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:47:32.604Z",
+      "finishedAt": "2026-03-11T13:51:22.127Z"
+    },
+    {
+      "docId": "2023-fornecimento-de-cafe-05a8f7a5",
+      "fileName": "2023_Fornecimento de café.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:51:22.129Z",
+      "finishedAt": "2026-03-11T13:52:04.217Z"
+    },
+    {
+      "docId": "2023-instabilidade-de-talude-rua-jose-ferreira-paz-1e108c1e",
+      "fileName": "2023_INSTABILIDADE DE TALUDE_RUA JOSÉ FERREIRA PAZ.pdf",
+      "mode": "standard",
+      "status": "completed",
+      "attempts": 1,
+      "startedAt": "2026-03-11T13:52:04.217Z",
+      "finishedAt": "2026-03-11T13:53:02.013Z"
+    }
+  ]
+}

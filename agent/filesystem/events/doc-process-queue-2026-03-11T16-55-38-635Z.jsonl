@@ -1,0 +1,5 @@
+{"seq":1,"ts":"2026-03-11T16:55:38.635Z","event":{"type":"agent_step","label":"Plano carregado: 7 documento(s)","status":"completed","details":"standard | queue"}}
+{"seq":2,"ts":"2026-03-11T16:55:38.636Z","event":{"type":"file_change","path":"filesystem/events/doc-process-plan-2026-03-11T16-55-38-635Z.json","changeType":"new","preview":"Plano de execução persistido (JSON)."}}
+{"seq":3,"ts":"2026-03-11T16:55:38.636Z","event":{"type":"file_change","path":"filesystem/events/doc-process-plan-2026-03-11T16-55-38-635Z.md","changeType":"new","preview":"Plano de execução persistido (Markdown)."}}
+{"seq":4,"ts":"2026-03-11T16:55:38.636Z","event":{"type":"agent_step","label":"[1/7] 2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf","status":"in_progress","details":"standard"}}
+{"seq":5,"ts":"2026-03-11T16:55:38.640Z","event":{"type":"agent_step","label":"2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf :: preview","status":"in_progress"}}

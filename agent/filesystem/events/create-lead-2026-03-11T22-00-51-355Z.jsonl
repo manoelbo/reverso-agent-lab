@@ -1,0 +1,6 @@
+{"seq":1,"ts":"2026-03-11T22:00:51.356Z","event":{"type":"agent_step","label":"Criando lead a partir da ideia: \"Language override test\"","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-11T22:00:51.359Z","event":{"type":"agent_step","label":"Contexto de source carregado para planejar o lead","status":"completed"}}
+{"seq":3,"ts":"2026-03-11T22:01:01.926Z","event":{"type":"agent_step","label":"Salvando lead e planejamento de inquiry em filesystem/investigation/leads...","status":"in_progress"}}
+{"seq":4,"ts":"2026-03-11T22:01:01.929Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/leads/lead-instabilidade-de-taludes-e-erosao.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Lead \"Instabilidade de Taludes e Erosão em São Paulo\" criado com Inquiry Plan."}}
+{"seq":5,"ts":"2026-03-11T22:01:01.929Z","event":{"type":"agent_step","label":"Lead criado","status":"completed","details":"lab/agent/filesystem/investigation/leads/lead-instabilidade-de-taludes-e-erosao.md"}}
+{"seq":6,"ts":"2026-03-11T22:01:01.929Z","event":{"type":"final_summary","title":"Lead criado","lines":["Lead: lab/agent/filesystem/investigation/leads/lead-instabilidade-de-taludes-e-erosao.md","Proximo passo: execute /inquiry para gerar allegations e findings conectados ao lead."]}}

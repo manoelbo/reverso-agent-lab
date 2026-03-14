@@ -1,0 +1,14 @@
+{"seq":1,"ts":"2026-03-12T14:00:27.519Z","event":{"type":"agent_step","label":"Iniciando inquiry para lead: atuacao-fiscal-despachos-autorizacao","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T14:00:27.525Z","event":{"type":"agent_step","label":"Generating inquiry execution plan (plan -> execute -> verify)...","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-12T14:00:35.972Z","event":{"type":"system_event","level":"info","message":"PEV enabled: steps<=8, tools<=16, timeout=120000ms, threshold=0.65"}}
+{"seq":4,"ts":"2026-03-12T14:00:35.972Z","event":{"type":"agent_step","label":"Executing planned tool actions...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-12T14:00:35.996Z","event":{"type":"loop_budget_updated","step":1,"usage":{"steps":1,"toolCalls":1,"elapsedMs":24,"estimatedTokens":56},"budget":{"maxSteps":8,"maxToolCalls":16,"maxElapsedMs":120000}}}
+{"seq":6,"ts":"2026-03-12T14:00:35.996Z","event":{"type":"loop_verification_result","step":1,"ok":false,"confidence":0.35,"reason":"tool_error","gaps":["Tool execution failed"]}}
+{"seq":7,"ts":"2026-03-12T14:00:35.997Z","event":{"type":"loop_stopped","step":1,"failures":1,"stopReason":"tool_error"}}
+{"seq":8,"ts":"2026-03-12T14:00:35.997Z","event":{"type":"agent_step","label":"PEV tool execution finished with stop_reason=tool_error","status":"blocked"}}
+{"seq":9,"ts":"2026-03-12T14:00:35.997Z","event":{"type":"agent_step","label":"Executando inquiry com LLM...","status":"in_progress"}}
+{"seq":10,"ts":"2026-03-12T14:00:42.980Z","event":{"type":"agent_step","label":"Cenario identificado: negative","status":"completed"}}
+{"seq":11,"ts":"2026-03-12T14:00:42.980Z","event":{"type":"agent_step","label":"Running pre-write validation (schema + refs + language)...","status":"in_progress"}}
+{"seq":12,"ts":"2026-03-12T14:00:42.982Z","event":{"type":"agent_step","label":"Pre-write validation passed","status":"completed"}}
+{"seq":13,"ts":"2026-03-12T14:00:42.987Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/leads/lead-atuacao-fiscal-despachos-autorizacao.md","changeType":"edited","addedLines":0,"removedLines":0,"preview":"# Conclusion atualizado com resultado da inquiry."}}
+{"seq":14,"ts":"2026-03-12T14:00:42.987Z","event":{"type":"final_summary","title":"Inquiry concluida","lines":["Stop reason: tool_error","Confidence: 0.70","Lead atualizado: lab/agent/filesystem/investigation/leads/lead-atuacao-fiscal-despachos-autorizacao.md","Allegations: 0","Findings: 0","Resultado consolidado no lead."]}}

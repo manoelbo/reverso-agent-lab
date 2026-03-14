@@ -1,0 +1,43 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente (contém chaves de API reais)
+.env.local
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Build
+dist/
+build/
+
+# Vite
+agent/interface/node_modules/.vite/
+
+# Documentos de investigação (PDFs — arquivos grandes e potencialmente sensíveis)
+*.pdf
+
+# Histórico de sessões de chat
+agent/filesystem/sessions/
+
+# Sessão de deep-dive ativa
+agent/filesystem/deep-dive-session.json
+
+# Artefatos gerados pelo processamento de PDFs
+agent/filesystem/source/.artifacts/
+agent/filesystem_test/source/.artifacts/
+
+# Métricas de inquiry (geradas automaticamente)
+agent/filesystem/events/inquiry-metrics-*.json
+
+# Checkpoint de fontes
+agent/filesystem/source/source-checkpoint.json
+agent/filesystem_test/source/source-checkpoint.json

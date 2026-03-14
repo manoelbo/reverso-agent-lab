@@ -1,0 +1,11 @@
+{"seq":1,"ts":"2026-03-10T21:36:46.322Z","event":{"type":"agent_step","label":"Iniciando inquiry para lead: fluxo-taludes","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-10T21:36:46.326Z","event":{"type":"agent_step","label":"Executando inquiry com LLM...","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-10T21:36:57.803Z","event":{"type":"agent_step","label":"Cenario identificado: positive","status":"completed"}}
+{"seq":4,"ts":"2026-03-10T21:36:57.808Z","event":{"type":"file_change","path":"lab/agent/output/investigation/allegations/allegation-001.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":5,"ts":"2026-03-10T21:36:57.808Z","event":{"type":"file_change","path":"lab/agent/output/investigation/allegations/allegation-002.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":6,"ts":"2026-03-10T21:36:57.809Z","event":{"type":"file_change","path":"lab/agent/output/investigation/findings/finding-001.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Finding gerado pelo inquiry."}}
+{"seq":7,"ts":"2026-03-10T21:36:57.809Z","event":{"type":"file_change","path":"lab/agent/output/investigation/findings/finding-002.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Finding gerado pelo inquiry."}}
+{"seq":8,"ts":"2026-03-10T21:36:57.809Z","event":{"type":"file_change","path":"lab/agent/output/investigation/findings/finding-003.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Finding gerado pelo inquiry."}}
+{"seq":9,"ts":"2026-03-10T21:36:57.809Z","event":{"type":"file_change","path":"lab/agent/output/investigation/findings/finding-004.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Finding gerado pelo inquiry."}}
+{"seq":10,"ts":"2026-03-10T21:36:57.810Z","event":{"type":"file_change","path":"lab/agent/output/investigation/leads/lead-fluxo-taludes.md","changeType":"edited","addedLines":0,"removedLines":0,"preview":"# Conclusion atualizado com resultado da inquiry."}}
+{"seq":11,"ts":"2026-03-10T21:36:57.810Z","event":{"type":"final_summary","title":"Inquiry concluida","lines":["Lead atualizado: lab/agent/output/investigation/leads/lead-fluxo-taludes.md","Allegations: 2","Findings: 4","Resultado consolidado no lead."]}}

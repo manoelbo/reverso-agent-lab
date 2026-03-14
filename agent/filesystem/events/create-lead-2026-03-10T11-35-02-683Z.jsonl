@@ -1,0 +1,6 @@
+{"seq":1,"ts":"2026-03-10T11:35:02.684Z","event":{"type":"agent_step","label":"Criando lead a partir da ideia: \"lead tool aware\"","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-10T11:35:02.688Z","event":{"type":"agent_step","label":"Contexto de source carregado para planejar o lead","status":"completed"}}
+{"seq":3,"ts":"2026-03-10T11:35:07.850Z","event":{"type":"agent_step","label":"Salvando investigacao em output/investigations...","status":"in_progress"}}
+{"seq":4,"ts":"2026-03-10T11:35:07.851Z","event":{"type":"file_change","path":"lab/agent/output/investigations/lead-taludes-instabilidade/investigation.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"investigation.md com titulo \"Instabilidade de Taludes e Erosão em São Paulo\" e 6 itens no checklist."}}
+{"seq":5,"ts":"2026-03-10T11:35:07.851Z","event":{"type":"agent_step","label":"Lead criado","status":"completed","details":"lab/agent/output/investigations/lead-taludes-instabilidade/investigation.md"}}
+{"seq":6,"ts":"2026-03-10T11:35:07.851Z","event":{"type":"final_summary","title":"Lead criado","lines":["Pasta: lab/agent/output/investigations/lead-taludes-instabilidade","Arquivo: lab/agent/output/investigations/lead-taludes-instabilidade/investigation.md","Adicione clues e linhas investigativas depois com os comandos do lab."]}}

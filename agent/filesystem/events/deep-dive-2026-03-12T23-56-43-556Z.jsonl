@@ -1,0 +1,16 @@
+{"seq":1,"ts":"2026-03-12T23:56:43.557Z","event":{"type":"agent_step","label":"Iniciando deep-dive (escavacao aprofundada de leads)...","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T23:56:43.557Z","event":{"type":"agent_step","label":"Carregando previews de lab/agent/filesystem/source/.artifacts","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-12T23:56:43.563Z","event":{"type":"agent_step","label":"7 preview(s) carregado(s)","status":"completed"}}
+{"seq":4,"ts":"2026-03-12T23:56:43.564Z","event":{"type":"agent_step","label":"Analise incremental (um preview por vez)...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-12T23:56:43.564Z","event":{"type":"agent_step","label":"Documento 1/7: 2023_ESCOLA_PROF_ESMERALDA_SALLES_PEREIRA_RAMOS_TREMEMBE.pdf","status":"in_progress"}}
+{"seq":6,"ts":"2026-03-12T23:56:51.738Z","event":{"type":"agent_step","label":"Documento 2/7: 2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf","status":"in_progress"}}
+{"seq":7,"ts":"2026-03-12T23:56:59.709Z","event":{"type":"agent_step","label":"Documento 3/7: 2023_Fornecimento de café.pdf","status":"in_progress"}}
+{"seq":8,"ts":"2026-03-12T23:57:13.817Z","event":{"type":"agent_step","label":"Documento 4/7: 2023_DESLIZAMENTO_RUA ARNALDO TEIXEIRA MENDES.pdf","status":"in_progress"}}
+{"seq":9,"ts":"2026-03-12T23:57:30.716Z","event":{"type":"agent_step","label":"Documento 5/7: 2022_COMBATE_EROSÃO_Jd. Novo Parelheiros.pdf","status":"in_progress"}}
+{"seq":10,"ts":"2026-03-12T23:57:52.418Z","event":{"type":"agent_step","label":"Documento 6/7: 2023_INSTABILIDADE DE TALUDE_RUA JOSÉ FERREIRA PAZ.pdf","status":"in_progress"}}
+{"seq":11,"ts":"2026-03-12T23:58:13.920Z","event":{"type":"agent_step","label":"Documento 7/7: 2021_Talude_Rua José Martins Veiga.pdf","status":"in_progress"}}
+{"seq":12,"ts":"2026-03-12T23:58:35.370Z","event":{"type":"agent_step","label":"Analise incremental concluida","status":"completed"}}
+{"seq":13,"ts":"2026-03-12T23:58:35.371Z","event":{"type":"agent_step","label":"Gerando linhas investigativas a partir das conclusoes...","status":"in_progress"}}
+{"seq":14,"ts":"2026-03-12T23:58:42.147Z","event":{"type":"agent_step","label":"Comparando com leads existentes e ranqueando top 3...","status":"in_progress"}}
+{"seq":15,"ts":"2026-03-12T23:58:47.964Z","event":{"type":"agent_step","label":"Deep-dive concluido","status":"completed"}}
+{"seq":16,"ts":"2026-03-12T23:58:47.995Z","event":{"type":"final_summary","title":"Deep-dive pronto","lines":["Analise concluida e contexto interno atualizado para os proximos turnos.","Session ID: dd-mmo4pprr-179881","Leads sugeridos (3):","1. Systemic Reliance on Emergency Contracting for Infrastructure (systemic-reliance-on-emergency-contracting-for-infrastructure)","2. Impact of Prior Works and Planning on Current Emergencies (impact-of-prior-works-and-planning-on-current-emergencies)","3. Consistency and Application of Legal Frameworks for Emergency Contracts (consistency-and-application-of-legal-frameworks-for-emergency-contracts)","Nenhuma duplicata detectada nesta rodada.","Proximo passo: responda em linguagem natural com \"plano de todos\", \"so o primeiro\", ou \"descarta e refaz\".","No CLI: pnpm reverso deep-dive-next --text \"<sua resposta>\"."]}}

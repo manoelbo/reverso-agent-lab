@@ -1,0 +1,20 @@
+{"seq":1,"ts":"2026-03-12T13:59:52.166Z","event":{"type":"agent_step","label":"Iniciando inquiry para lead: multiplos-empenhos-arts-mesma-obra","status":"in_progress"}}
+{"seq":2,"ts":"2026-03-12T13:59:52.173Z","event":{"type":"agent_step","label":"Generating inquiry execution plan (plan -> execute -> verify)...","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-12T14:00:00.221Z","event":{"type":"system_event","level":"info","message":"PEV enabled: steps<=8, tools<=16, timeout=120000ms, threshold=0.65"}}
+{"seq":4,"ts":"2026-03-12T14:00:00.222Z","event":{"type":"agent_step","label":"Executing planned tool actions...","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-12T14:00:00.223Z","event":{"type":"loop_budget_updated","step":1,"usage":{"steps":1,"toolCalls":1,"elapsedMs":1,"estimatedTokens":36},"budget":{"maxSteps":8,"maxToolCalls":16,"maxElapsedMs":120000}}}
+{"seq":6,"ts":"2026-03-12T14:00:00.224Z","event":{"type":"loop_verification_result","step":1,"ok":false,"confidence":0.35,"reason":"tool_error","gaps":["Tool execution failed"]}}
+{"seq":7,"ts":"2026-03-12T14:00:00.224Z","event":{"type":"loop_stopped","step":1,"failures":1,"stopReason":"tool_error"}}
+{"seq":8,"ts":"2026-03-12T14:00:00.224Z","event":{"type":"agent_step","label":"PEV tool execution finished with stop_reason=tool_error","status":"blocked"}}
+{"seq":9,"ts":"2026-03-12T14:00:00.224Z","event":{"type":"agent_step","label":"Executando inquiry com LLM...","status":"in_progress"}}
+{"seq":10,"ts":"2026-03-12T14:00:09.733Z","event":{"type":"agent_step","label":"Cenario identificado: negative","status":"completed"}}
+{"seq":11,"ts":"2026-03-12T14:00:09.733Z","event":{"type":"agent_step","label":"Applying evidence gate (minConfidence=0.70)...","status":"in_progress"}}
+{"seq":12,"ts":"2026-03-12T14:00:09.733Z","event":{"type":"system_event","level":"info","message":"Evidence gate summary: persisted=0, review_queue=0"}}
+{"seq":13,"ts":"2026-03-12T14:00:09.733Z","event":{"type":"agent_step","label":"Running pre-write validation (schema + refs + language)...","status":"in_progress"}}
+{"seq":14,"ts":"2026-03-12T14:00:09.735Z","event":{"type":"agent_step","label":"Pre-write validation passed","status":"completed"}}
+{"seq":15,"ts":"2026-03-12T14:00:09.739Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-1.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":16,"ts":"2026-03-12T14:00:09.739Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-2.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":17,"ts":"2026-03-12T14:00:09.739Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-3.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":18,"ts":"2026-03-12T14:00:09.739Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/allegations/allegation-4.md","changeType":"new","addedLines":0,"removedLines":0,"preview":"Allegation gerada pelo inquiry."}}
+{"seq":19,"ts":"2026-03-12T14:00:09.740Z","event":{"type":"file_change","path":"lab/agent/filesystem/investigation/leads/lead-multiplos-empenhos-arts-mesma-obra.md","changeType":"edited","addedLines":0,"removedLines":0,"preview":"# Conclusion atualizado com resultado da inquiry."}}
+{"seq":20,"ts":"2026-03-12T14:00:09.740Z","event":{"type":"final_summary","title":"Inquiry concluida","lines":["Stop reason: tool_error","Confidence: 0.70","Lead atualizado: lab/agent/filesystem/investigation/leads/lead-multiplos-empenhos-arts-mesma-obra.md","Allegations: 4","Findings: 0","Review queue (weak/missing): 0","Resultado consolidado no lead."]}}

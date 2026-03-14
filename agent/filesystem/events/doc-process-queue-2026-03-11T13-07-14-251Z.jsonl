@@ -1,0 +1,5 @@
+{"seq":1,"ts":"2026-03-11T13:07:14.251Z","event":{"type":"agent_step","label":"[1/4] 2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf","status":"in_progress","details":"standard"}}
+{"seq":2,"ts":"2026-03-11T13:07:14.252Z","event":{"type":"agent_step","label":"2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf :: preview","status":"in_progress"}}
+{"seq":3,"ts":"2026-03-11T13:08:09.622Z","event":{"type":"agent_step","label":"2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf :: preview","status":"completed"}}
+{"seq":4,"ts":"2026-03-11T13:08:09.622Z","event":{"type":"agent_step","label":"2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf :: index","status":"in_progress"}}
+{"seq":5,"ts":"2026-03-11T13:08:09.770Z","event":{"type":"agent_step","label":"2023_EROSÃO_DAS_MARGENS_DO_CÓRREGO_AVENIDA_ARICANDUVA.pdf :: notes","status":"in_progress"}}

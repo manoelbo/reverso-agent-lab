@@ -1,0 +1,38 @@
+{
+  "name": "agent-interface-sandbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../../node_modules/vite/bin/vite.js",
+    "build": "node ../../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json && node ../../../node_modules/vite/bin/vite.js build",
+    "typecheck": "node ../../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+    "preview": "node ../../../node_modules/vite/bin/vite.js preview"
+  },
+  "dependencies": {
+    "@ai-sdk/react": "^3.0.118",
+    "@radix-ui/react-use-controllable-state": "^1.2.2",
+    "@rive-app/react-webgl2": "^4.27.1",
+    "@streamdown/cjk": "^1.0.2",
+    "@streamdown/code": "^1.1.0",
+    "@streamdown/math": "^1.0.2",
+    "@streamdown/mermaid": "^1.0.2",
+    "@xyflow/react": "^12.10.1",
+    "ai": "^6.0.116",
+    "ansi-to-react": "^6.2.6",
+    "cmdk": "^1.1.1",
+    "embla-carousel-react": "^8.6.0",
+    "lucide-react": "^0.577.0",
+    "media-chrome": "^4.18.0",
+    "motion": "^12.36.0",
+    "nanoid": "^5.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-jsx-parser": "^2.4.1",
+    "shiki": "^4.0.2",
+    "streamdown": "^2.4.0",
+    "tokenlens": "^1.3.1",
+    "use-stick-to-bottom": "^1.1.3",
+    "zustand": "^5.0.11"
+  }
+}
