@@ -207,6 +207,52 @@ describe('/api/chat route integration', () => {
     assert.equal(sourceState?.data?.pending, 1)
   })
 
+  it('expõe contagem de falhas no data-sourceState', async () => {
+    const filesystemRoot = await prepareFilesystemRoot()
+    const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))
+    process.env['REVERSO_FILESYSTEM_ROOT'] = filesystemRoot
+    process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+    process.env['AI_GATEWAY_API_KEY'] = ''
+    process.env['OPENROUTER_API_KEY'] = ''
+    await writeFile(path.join(filesystemRoot, 'source', 'doc-falha.pdf'), '')
+    await writeFile(
+      path.join(filesystemRoot, 'source', 'source-checkpoint.json'),
+      JSON.stringify(
+        {
+          files: [
+            {
+              docId: 'doc-falha',
+              originalFileName: 'doc-falha.pdf',
+              status: 'failed',
+              lastError: 'quebra no parser',
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    )
+
+    const request = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: createUserMessage('quais são os pontos principais?'),
+        autoAccept: false,
+      }),
+    })
+
+    const response = await POST(request)
+    const payload = await response.text()
+    const sourceState = parseStreamDataParts(payload).find(
+      (part) => part.type === 'data-sourceState'
+    ) as { data?: { failed?: number } } | undefined
+
+    assert.equal(response.status, 200)
+    assert.equal(sourceState?.data?.failed, 1)
+  })
+
   it('enfileira init quando há previews sem agent.md', async () => {
     const filesystemRoot = await prepareFilesystemRoot()
     const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))

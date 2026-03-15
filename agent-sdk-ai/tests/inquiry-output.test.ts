@@ -32,4 +32,29 @@ describe('parseInquiryPanelData', () => {
     })
     assert.equal(result, undefined)
   })
+
+  it('usa fallback de contagem com base nas listas quando gate não informa números', () => {
+    const result = parseInquiryPanelData({
+      lead: 'lead-x',
+      evidenceGate: {},
+      inquirySummary: {
+        allegations: [
+          { id: 'a1', statement: 'A1' },
+          { id: '', statement: 'inválida' },
+        ],
+        verifiedFindings: [
+          { id: 'f1', claim: 'F1' },
+          { id: 'f2', claim: 'F2' },
+        ],
+        reviewFindings: [{ id: 'r1', claim: 'R1' }],
+      },
+    })
+
+    assert.ok(result)
+    assert.equal(result?.verifiedFindingsCount, 2)
+    assert.equal(result?.reviewQueueCount, 1)
+    assert.equal(result?.allegations.length, 1)
+    assert.equal(result?.verifiedItems.length, 2)
+    assert.equal(result?.reviewItems.length, 1)
+  })
 })
