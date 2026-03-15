@@ -536,6 +536,11 @@ export default function HomePage() {
                   )
                 }
 
+                // Step-start parts are internal workflow signals; skip rendering
+                if ((part as { type?: string }).type === 'step-start') {
+                  return null
+                }
+
                 // Unhandled part
                 const unhandledType =
                   typeof (part as { type?: unknown }).type === 'string'
