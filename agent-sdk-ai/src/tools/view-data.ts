@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { resolveConfig } from '@/lib/config'
 import { listMarkdownFiles, readUtf8 } from '@/lib/filesystem'
 import { detectSystemState } from '@/lib/source-state'
+import { parseLeadSummaryFromMarkdown } from '@/lib/format-parsers'
 
 async function summarizeLead(filePath: string): Promise<{
   slug: string
@@ -11,16 +12,10 @@ async function summarizeLead(filePath: string): Promise<{
   status: string
 }> {
   const raw = (await readUtf8(filePath)) ?? ''
-  const title =
-    raw.match(/^title:\s+"?(.+?)"?$/m)?.[1] ??
-    raw.match(/^#\s+(.+)$/m)?.[1] ??
-    path.basename(filePath, '.md')
-  const status = raw.match(/^status:\s+(.+)$/m)?.[1]?.trim() ?? 'draft'
-  return {
-    slug: path.basename(filePath, '.md').replace(/^lead-/, ''),
-    title: title.trim(),
-    status,
-  }
+  return parseLeadSummaryFromMarkdown({
+    fileName: path.basename(filePath),
+    raw,
+  })
 }
 
 export const viewDataTool = tool({

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import os from 'node:os'
 import path from 'node:path'
-import { mkdtemp, mkdir } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises'
 import { loadWorkflowSnapshot } from '../src/lib/workflow-state'
 import type { ReversoPaths } from '../src/lib/config'
 
@@ -45,5 +45,86 @@ describe('loadWorkflowSnapshot', () => {
     assert.equal(snapshot.intent.intent, 'greeting')
     assert.equal(snapshot.queuePlan.steps.at(-1), 'Atender intenção: greeting')
     assert.ok(snapshot.guidance.preflight.length >= 1)
+  })
+
+  it('prioriza processamento quando há PDFs pendentes', async () => {
+    const paths = await createMinimalPaths()
+    await writeFile(path.join(paths.sourceDir, 'pendente.pdf'), '')
+
+    const snapshot = await loadWorkflowSnapshot({
+      paths,
+      userText: 'investigue este caso',
+      classifyIntent: async () => ({
+        intent: 'deep_dive',
+        confidence: 0.9,
+        reason: 'pedido investigativo',
+      }),
+    })
+
+    assert.ok(
+      snapshot.guidance.preflight.some((line) => line.includes('PDFs pendentes'))
+    )
+    assert.equal(snapshot.queuePlan.steps.at(-1), 'Atender intenção: deep_dive')
+  })
+
+  it('enfileira init automático quando há previews sem agent.md', async () => {
+    const paths = await createMinimalPaths()
+    await writeFile(path.join(paths.sourceDir, 'doc-a.pdf'), '')
+    await writeFile(
+      path.join(paths.sourceDir, 'source-checkpoint.json'),
+      JSON.stringify(
+        {
+          files: [{ docId: 'doc-a', originalFileName: 'doc-a.pdf', status: 'done' }],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    )
+
+    const snapshot = await loadWorkflowSnapshot({
+      paths,
+      userText: 'resuma os dados',
+      classifyIntent: async () => ({
+        intent: 'quick_research',
+        confidence: 0.75,
+        reason: 'pergunta factual',
+      }),
+    })
+
+    assert.ok(
+      snapshot.guidance.preflight.some((line) => line.includes('initContext'))
+    )
+  })
+
+  it('detecta sessão deep-dive ativa e prioriza continuidade', async () => {
+    const paths = await createMinimalPaths()
+    const deepDiveDir = path.join(paths.filesystemRoot, 'sessions', 'deep-dive')
+    await mkdir(deepDiveDir, { recursive: true })
+    await writeFile(
+      path.join(deepDiveDir, 'active-session.json'),
+      JSON.stringify({ sessionId: 'sess-1' }, null, 2),
+      'utf8'
+    )
+    await writeFile(
+      path.join(deepDiveDir, 'sess-1.json'),
+      JSON.stringify({ stage: 'awaiting_plan_decision', sessionId: 'sess-1' }, null, 2),
+      'utf8'
+    )
+
+    const snapshot = await loadWorkflowSnapshot({
+      paths,
+      userText: 'continue',
+      classifyIntent: async () => ({
+        intent: 'deep_dive_next',
+        confidence: 0.83,
+        reason: 'continuidade',
+      }),
+    })
+
+    assert.equal(snapshot.guidance.shouldPrioritizeDeepDiveSession, true)
+    assert.ok(
+      snapshot.guidance.preflight.some((line) => line.includes('sessão deep-dive ativa'))
+    )
   })
 })

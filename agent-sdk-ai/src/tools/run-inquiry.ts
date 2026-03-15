@@ -6,13 +6,7 @@ import { inquiryFinalPayloadSchema } from '@/lib/contracts'
 import { validateWithSelfRepair } from '@/lib/self-repair'
 import { applyEvidenceGate } from '@/lib/evidence-gate'
 import { resolveCriticalWriteGateDecision } from '@/lib/critical-write-gate'
-
-function extractJsonCandidate(text: string): string | undefined {
-  const firstBrace = text.indexOf('{')
-  const lastBrace = text.lastIndexOf('}')
-  if (firstBrace === -1 || lastBrace <= firstBrace) return undefined
-  return text.slice(firstBrace, lastBrace + 1)
-}
+import { extractJsonCandidate } from '@/lib/format-parsers'
 
 export const runInquiryTool = tool({
   description:
