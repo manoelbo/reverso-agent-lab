@@ -16,12 +16,7 @@ import { ToolCallDisplay } from '@/components/chat/tool-call-display'
 import { SourcesDisplay } from '@/components/chat/sources-display'
 import { LeadCard } from '@/components/chat/lead-card'
 import { AllegationDisplay } from '@/components/chat/allegation-display'
-
-interface InquirySummary {
-  allegations: Array<{ id: string; statement: string }>
-  verifiedFindings: Array<{ id: string; claim: string }>
-  reviewFindings: Array<{ id: string; claim: string }>
-}
+import { parseInquiryPanelData } from '@/lib/inquiry-output'
 
 function json(value: unknown): string {
   return JSON.stringify(value, null, 2)
@@ -391,36 +386,20 @@ export default function HomePage() {
 
                       {part.state === 'output-available' &&
                       toolName === 'runInquiry' &&
-                      typeof (part.output as { lead?: unknown; evidenceGate?: unknown })
-                        ?.evidenceGate === 'object' &&
-                      (part.output as { evidenceGate: { verifiedFindings?: number; reviewQueue?: number } })
-                        .evidenceGate !== null ? (
+                      parseInquiryPanelData(part.output) ? (
                         (() => {
-                          const output = part.output as {
-                            lead?: unknown
-                            evidenceGate: { verifiedFindings?: number; reviewQueue?: number }
-                            inquirySummary?: unknown
-                          }
-                          const summary =
-                            typeof output.inquirySummary === 'object' &&
-                            output.inquirySummary !== null
-                              ? (output.inquirySummary as InquirySummary)
-                              : undefined
-                          const leadSlug =
-                            typeof output.lead === 'string' ? output.lead : 'lead'
+                          const panelData = parseInquiryPanelData(part.output)
+                          if (!panelData) return null
+                          const leadSlug = panelData.lead
 
                           return (
                         <AllegationDisplay
                           lead={leadSlug}
-                          verifiedFindings={
-                            output.evidenceGate.verifiedFindings ?? 0
-                          }
-                          reviewQueue={
-                            output.evidenceGate.reviewQueue ?? 0
-                          }
-                          allegations={summary?.allegations ?? []}
-                          verifiedItems={summary?.verifiedFindings ?? []}
-                          reviewItems={summary?.reviewFindings ?? []}
+                          verifiedFindings={panelData.verifiedFindingsCount}
+                          reviewQueue={panelData.reviewQueueCount}
+                          allegations={panelData.allegations}
+                          verifiedItems={panelData.verifiedItems}
+                          reviewItems={panelData.reviewItems}
                           onAcceptAllegation={(allegationId) => {
                             void sendMessage({
                               text: `Aceitar alegação ${allegationId} do lead ${leadSlug}.`,
