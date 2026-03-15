@@ -14,4 +14,16 @@ describe('runProcess', () => {
     assert.equal(result.exitCode, 0)
     assert.ok(result.stdout.includes('runner-ok'))
   })
+
+  it('retorna exitCode de falha sem lançar quando processo encerra com erro', async () => {
+    const result = await runProcess({
+      command: 'node',
+      args: ['-e', 'process.stderr.write("runner-fail\\n"); process.exit(3)'],
+      cwd: process.cwd(),
+      timeoutMs: 3000,
+    })
+
+    assert.equal(result.exitCode, 3)
+    assert.ok(result.stderr.includes('runner-fail'))
+  })
 })
