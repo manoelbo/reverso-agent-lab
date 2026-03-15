@@ -55,4 +55,52 @@ describe('buildWorkflowGuidance', () => {
 
     assert.ok(guidance.preflight.some((line) => line.includes('processamento')))
   })
+
+  it('orienta upload quando source está vazio para intenção investigativa', () => {
+    const guidance = buildWorkflowGuidance({
+      intent: {
+        intent: 'deep_dive',
+        confidence: 0.88,
+        reason: 'pedido investigativo',
+      },
+      session: undefined,
+      state: {
+        sourceEmpty: true,
+        unprocessedFiles: [],
+        processedFiles: [],
+        failedFiles: [],
+        totalSourceFiles: 0,
+        hasAgentContext: false,
+        hasPreviewsWithoutInit: false,
+        isFirstVisit: true,
+        leadsCount: 0,
+      },
+    })
+
+    assert.ok(guidance.preflight.some((line) => line.includes('base de fontes está vazia')))
+  })
+
+  it('enfileira init quando previews existem sem agent.md', () => {
+    const guidance = buildWorkflowGuidance({
+      intent: {
+        intent: 'quick_research',
+        confidence: 0.74,
+        reason: 'pergunta',
+      },
+      session: undefined,
+      state: {
+        sourceEmpty: false,
+        unprocessedFiles: [],
+        processedFiles: [{ docId: 'p', fileName: 'p.pdf' }],
+        failedFiles: [],
+        totalSourceFiles: 1,
+        hasAgentContext: false,
+        hasPreviewsWithoutInit: true,
+        isFirstVisit: false,
+        leadsCount: 0,
+      },
+    })
+
+    assert.ok(guidance.preflight.some((line) => line.includes('Execute initContext')))
+  })
 })

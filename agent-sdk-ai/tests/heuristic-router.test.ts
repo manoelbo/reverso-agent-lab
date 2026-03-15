@@ -20,4 +20,22 @@ describe('heuristicIntent', () => {
     assert.ok(decision)
     assert.equal(decision.intent, 'view_data')
   })
+
+  it('detecta atualização de contexto', () => {
+    const decision = heuristicIntent('atualiza o agent.md com foco em contratos emergenciais')
+    assert.ok(decision)
+    assert.equal(decision.intent, 'update_agent_context')
+  })
+
+  it('detecta criação de lead por hipótese', () => {
+    const decision = heuristicIntent('cria lead para hipótese de sobrepreço na obra')
+    assert.ok(decision)
+    assert.equal(decision.intent, 'create_lead')
+  })
+
+  it('detecta inquiry explícito', () => {
+    const decision = heuristicIntent('execute inquiry no lead fraude-obras')
+    assert.ok(decision)
+    assert.equal(decision.intent, 'run_inquiry')
+  })
 })
