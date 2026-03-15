@@ -1,13 +1,10 @@
 import { createAgentUIStream, createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import { classifyIntent } from '@/agent/router'
 import { buildSystemPrompt } from '@/agent/system-prompt'
-import { buildWorkflowGuidance } from '@/agent/workflow-engine'
-import { buildQueuePlan } from '@/agent/queue-planner'
 import { createReversoAgent } from '@/agent/reverso-agent'
 import { resolveConfig } from '@/lib/config'
-import { detectSystemState } from '@/lib/source-state'
-import { loadActiveDeepDiveSession } from '@/lib/session-store'
 import { persistChat } from '@/lib/chat-persistence'
+import { loadWorkflowSnapshot } from '@/lib/workflow-state'
 import type { ReversoUIMessage } from '@/types/ui-message'
 
 export const runtime = 'nodejs'
@@ -52,17 +49,16 @@ export async function POST(req: Request): Promise<Response> {
   const originalMessages = uiMessages as ReversoUIMessage[]
   const userText = extractLatestUserText(uiMessages)
 
-  const [state, session, intent] = await Promise.all([
-    detectSystemState(config.paths),
-    loadActiveDeepDiveSession(config.paths),
-    classifyIntent(userText || 'mensagem vazia'),
-  ])
+  const workflow = await loadWorkflowSnapshot({
+    paths: config.paths,
+    userText,
+    classifyIntent,
+  })
 
-  const workflow = buildWorkflowGuidance({ intent, state, session })
   const systemPrompt = buildSystemPrompt({
-    state,
-    session,
-    intent,
+    state: workflow.state,
+    session: workflow.session,
+    intent: workflow.intent,
     autoAccept: body.autoAccept ?? config.autoAcceptDefault,
   })
 
@@ -70,15 +66,12 @@ export async function POST(req: Request): Promise<Response> {
     systemPrompt,
     '',
     'Pré-flight guidance para esta mensagem:',
-    ...workflow.preflight.map((line) => `- ${line}`),
+    ...workflow.guidance.preflight.map((line) => `- ${line}`),
   ].join('\n')
 
   const agent = createReversoAgent({ dynamicInstructions })
   const autoAccept = body.autoAccept ?? config.autoAcceptDefault
-  const queuePlan = buildQueuePlan({
-    preflight: workflow.preflight,
-    intent: intent.intent,
-  })
+  const { queuePlan } = workflow
 
   const stream = createUIMessageStream<ReversoUIMessage>({
     originalMessages,
@@ -131,8 +124,8 @@ export async function POST(req: Request): Promise<Response> {
         messageMetadata: ({ part }) => {
           if (part.type === 'start') {
             return {
-              intent: intent.intent,
-              confidence: intent.confidence,
+              intent: workflow.intent.intent,
+              confidence: workflow.intent.confidence,
               timestamp: Date.now(),
             }
           }
