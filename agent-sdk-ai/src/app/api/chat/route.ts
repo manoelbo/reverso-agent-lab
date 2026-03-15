@@ -6,6 +6,7 @@ import { resolveConfig } from '@/lib/config'
 import { persistChat } from '@/lib/chat-persistence'
 import { loadWorkflowSnapshot } from '@/lib/workflow-state'
 import type { ReversoUIMessage } from '@/types/ui-message'
+import { extractLatestUserText, normalizeMessages } from './route-helpers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,33 +14,6 @@ export const dynamic = 'force-dynamic'
 interface ChatRequestBody {
   messages?: unknown[]
   autoAccept?: boolean
-}
-
-function extractLatestUserText(messages: unknown[]): string {
-  const lastUser = [...messages]
-    .reverse()
-    .find(
-      (message) =>
-        typeof message === 'object' &&
-        message !== null &&
-        (message as Record<string, unknown>)['role'] === 'user'
-    ) as Record<string, unknown> | undefined
-
-  if (!lastUser) return ''
-  const parts = Array.isArray(lastUser['parts']) ? (lastUser['parts'] as unknown[]) : []
-  const textParts = parts.filter(
-    (part) =>
-      typeof part === 'object' &&
-      part !== null &&
-      (part as Record<string, unknown>)['type'] === 'text' &&
-      typeof (part as Record<string, unknown>)['text'] === 'string'
-  ) as Array<Record<string, string>>
-
-  return textParts.map((part) => part.text).join('\n').trim()
-}
-
-function normalizeMessages(value: unknown): unknown[] {
-  return Array.isArray(value) ? value : []
 }
 
 export async function POST(req: Request): Promise<Response> {
