@@ -66,4 +66,28 @@ describe('resolveConfig', () => {
       }
     }
   })
+
+  it('usa AGENT_LAB_MODEL como fallback quando REVERSO_MODEL_ID não está definido', () => {
+    const originalReversoModel = process.env['REVERSO_MODEL_ID']
+    const originalAgentLabModel = process.env['AGENT_LAB_MODEL']
+    try {
+      delete process.env['REVERSO_MODEL_ID']
+      process.env['AGENT_LAB_MODEL'] = 'google/gemini-2.5-flash'
+
+      const config = resolveConfig()
+      assert.equal(config.modelId, 'google/gemini-2.5-flash')
+    } finally {
+      if (originalReversoModel === undefined) {
+        delete process.env['REVERSO_MODEL_ID']
+      } else {
+        process.env['REVERSO_MODEL_ID'] = originalReversoModel
+      }
+
+      if (originalAgentLabModel === undefined) {
+        delete process.env['AGENT_LAB_MODEL']
+      } else {
+        process.env['AGENT_LAB_MODEL'] = originalAgentLabModel
+      }
+    }
+  })
 })

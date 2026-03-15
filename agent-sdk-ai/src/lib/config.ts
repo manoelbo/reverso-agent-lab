@@ -66,7 +66,10 @@ export function resolveConfig(): ReversoConfig {
 
   return {
     paths,
-    modelId: process.env['REVERSO_MODEL_ID'] ?? 'google/gemini-2.5-flash',
+    modelId:
+      process.env['REVERSO_MODEL_ID'] ??
+      process.env['AGENT_LAB_MODEL'] ??
+      'google/gemini-2.5-flash',
     autoAcceptDefault: asBool(process.env['REVERSO_AUTO_ACCEPT_DEFAULT'], false),
     providerMode: process.env['OPENROUTER_API_KEY'] ? 'openrouter' : 'gateway',
     deepDiveSessionTtlMs,
