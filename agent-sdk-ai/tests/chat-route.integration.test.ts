@@ -21,6 +21,42 @@ async function prepareFilesystemRoot(): Promise<string> {
   return root
 }
 
+async function expectIntentForMessage(input: {
+  text: string
+  expectedIntent: string
+  autoAccept?: boolean
+}): Promise<void> {
+  const filesystemRoot = await prepareFilesystemRoot()
+  const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))
+  process.env['REVERSO_FILESYSTEM_ROOT'] = filesystemRoot
+  process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+  process.env['AI_GATEWAY_API_KEY'] = ''
+  process.env['OPENROUTER_API_KEY'] = ''
+
+  const request = new Request('http://localhost/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: createUserMessage(input.text),
+      autoAccept: input.autoAccept ?? false,
+    }),
+  })
+
+  const response = await POST(request)
+  const payload = await response.text()
+  const parts = parseStreamDataParts(payload)
+  const startPart = parts.find((part) => part.type === 'start') as
+    | { messageMetadata?: { intent?: string } }
+    | undefined
+  const queueSteps = firstQueuePart(payload)?.data?.steps ?? []
+
+  assert.equal(response.status, 200)
+  assert.equal(startPart?.messageMetadata?.intent, input.expectedIntent)
+  assert.ok(
+    queueSteps.some((step) => step.includes(`Atender intenção: ${input.expectedIntent}`))
+  )
+}
+
 function parseStreamDataParts(payload: string): Array<Record<string, unknown>> {
   const parts: Array<Record<string, unknown>> = []
   for (const line of payload.split('\n')) {
@@ -344,5 +380,36 @@ describe('/api/chat route integration', () => {
     assert.equal(response.status, 200)
     assert.equal(startPart?.messageMetadata?.intent, 'general_chat')
     assert.ok(queueSteps.some((step) => step.includes('Atender intenção: general_chat')))
+  })
+
+  it('roteia intents heurísticas principais sem depender do modelo', async () => {
+    await expectIntentForMessage({
+      text: 'quais leads já existem?',
+      expectedIntent: 'view_data',
+    })
+    await expectIntentForMessage({
+      text: 'atualiza o agent.md com foco em contratos',
+      expectedIntent: 'update_agent_context',
+    })
+    await expectIntentForMessage({
+      text: 'cria lead para hipótese de sobrepreço',
+      expectedIntent: 'create_lead',
+    })
+    await expectIntentForMessage({
+      text: 'execute inquiry no lead fraude-obras',
+      expectedIntent: 'run_inquiry',
+    })
+    await expectIntentForMessage({
+      text: 'inicializa o contexto',
+      expectedIntent: 'init',
+    })
+    await expectIntentForMessage({
+      text: 'continue',
+      expectedIntent: 'deep_dive_next',
+    })
+    await expectIntentForMessage({
+      text: 'quem são os principais envolvidos?',
+      expectedIntent: 'quick_research',
+    })
   })
 })
