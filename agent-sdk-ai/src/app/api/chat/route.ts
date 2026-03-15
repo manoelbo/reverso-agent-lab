@@ -67,6 +67,17 @@ export async function POST(req: Request): Promise<Response> {
       })
 
       writer.write({
+        type: 'data-sourceState',
+        id: 'workflow-source-state',
+        data: {
+          sourceEmpty: workflow.state.sourceEmpty,
+          processed: workflow.state.processedFiles.length,
+          pending: workflow.state.unprocessedFiles.length,
+          failed: workflow.state.failedFiles.length,
+        },
+      })
+
+      writer.write({
         type: 'data-queue',
         id: 'workflow-queue',
         data: {

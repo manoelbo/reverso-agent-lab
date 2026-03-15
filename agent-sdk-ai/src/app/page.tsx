@@ -47,6 +47,16 @@ interface SuggestionDataPart {
   }
 }
 
+interface SourceStateDataPart {
+  type: 'data-sourceState'
+  data: {
+    sourceEmpty: boolean
+    processed: number
+    pending: number
+    failed: number
+  }
+}
+
 function isWorkflowPart(part: unknown): part is WorkflowDataPart {
   return (
     typeof part === 'object' &&
@@ -71,6 +81,15 @@ function isSuggestionPart(part: unknown): part is SuggestionDataPart {
     part !== null &&
     (part as { type?: unknown }).type === 'data-suggestion' &&
     typeof (part as { data?: { action?: unknown } }).data?.action === 'string'
+  )
+}
+
+function isSourceStatePart(part: unknown): part is SourceStateDataPart {
+  return (
+    typeof part === 'object' &&
+    part !== null &&
+    (part as { type?: unknown }).type === 'data-sourceState' &&
+    typeof (part as { data?: { sourceEmpty?: unknown } }).data?.sourceEmpty === 'boolean'
   )
 }
 
@@ -467,6 +486,29 @@ export default function HomePage() {
                       }}
                     >
                       <strong>{part.data.title}</strong>: {part.data.action}
+                    </div>
+                  )
+                }
+
+                if (isSourceStatePart(part)) {
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1a222b',
+                        border: '1px solid #3f5368',
+                        borderRadius: 8,
+                        padding: 8,
+                      }}
+                    >
+                      <strong>Estado da source</strong>
+                      <div style={{ fontSize: 13, marginTop: 4 }}>
+                        {part.data.sourceEmpty ? 'Sem PDFs na source.' : 'PDFs detectados na source.'}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+                        Processados: {part.data.processed} · Pendentes: {part.data.pending} · Falhas:{' '}
+                        {part.data.failed}
+                      </div>
                     </div>
                   )
                 }

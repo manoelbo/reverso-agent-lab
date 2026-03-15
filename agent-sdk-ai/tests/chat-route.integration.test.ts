@@ -102,17 +102,23 @@ describe('/api/chat route integration', () => {
     const payload = await response.text()
     const parts = parseStreamDataParts(payload)
     const startPart = parts.find((part) => part.type === 'start')
+    const sourceStatePart = parts.find((part) => part.type === 'data-sourceState') as
+      | { data?: { sourceEmpty?: boolean; processed?: number; pending?: number; failed?: number } }
+      | undefined
 
     assert.equal(response.status, 200)
     assert.ok(payload.includes('"type":"data-workflow"'))
     assert.ok(payload.includes('"type":"data-queue"'))
     assert.ok(payload.includes('"type":"data-suggestion"'))
+    assert.ok(payload.includes('"type":"data-sourceState"'))
     assert.ok(payload.includes('"Auto-accept está desligado'))
     assert.equal(
       (startPart as { messageMetadata?: { intent?: string } } | undefined)?.messageMetadata
         ?.intent,
       'greeting'
     )
+    assert.equal(sourceStatePart?.data?.sourceEmpty, true)
+    assert.equal(sourceStatePart?.data?.processed, 0)
   })
 
   it('reflete auto-accept ativo na sugestão de aprovação', async () => {
@@ -191,9 +197,14 @@ describe('/api/chat route integration', () => {
     const response = await POST(request)
     const payload = await response.text()
     const queue = firstQueuePart(payload)
+    const sourceState = parseStreamDataParts(payload).find(
+      (part) => part.type === 'data-sourceState'
+    ) as { data?: { pending?: number; sourceEmpty?: boolean } } | undefined
 
     assert.equal(response.status, 200)
     assert.ok((queue?.data?.steps ?? []).some((step) => step.includes('PDFs pendentes')))
+    assert.equal(sourceState?.data?.sourceEmpty, false)
+    assert.equal(sourceState?.data?.pending, 1)
   })
 
   it('enfileira init quando há previews sem agent.md', async () => {

@@ -22,6 +22,12 @@ export interface ReversoDataParts {
     title: string
     action: string
   }
+  sourceState: {
+    sourceEmpty: boolean
+    processed: number
+    pending: number
+    failed: number
+  }
 }
 
 export type ReversoUIMessage = UIMessage<
