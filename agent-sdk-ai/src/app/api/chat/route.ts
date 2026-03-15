@@ -2,10 +2,12 @@ import { createAgentUIStream, createUIMessageStream, createUIMessageStreamRespon
 import { classifyIntent } from '@/agent/router'
 import { buildSystemPrompt } from '@/agent/system-prompt'
 import { buildWorkflowGuidance } from '@/agent/workflow-engine'
+import { buildQueuePlan } from '@/agent/queue-planner'
 import { createReversoAgent } from '@/agent/reverso-agent'
 import { resolveConfig } from '@/lib/config'
 import { detectSystemState } from '@/lib/source-state'
-import { loadActiveDeepDiveSession, saveChatMessages } from '@/lib/session-store'
+import { loadActiveDeepDiveSession } from '@/lib/session-store'
+import { persistChat } from '@/lib/chat-persistence'
 import type { ReversoUIMessage } from '@/types/ui-message'
 
 export const runtime = 'nodejs'
@@ -73,7 +75,10 @@ export async function POST(req: Request): Promise<Response> {
 
   const agent = createReversoAgent({ dynamicInstructions })
   const autoAccept = body.autoAccept ?? config.autoAcceptDefault
-  const queueSteps = [...workflow.preflight, `Atender intenção: ${intent.intent}`]
+  const queuePlan = buildQueuePlan({
+    preflight: workflow.preflight,
+    intent: intent.intent,
+  })
 
   const stream = createUIMessageStream<ReversoUIMessage>({
     originalMessages,
@@ -82,7 +87,7 @@ export async function POST(req: Request): Promise<Response> {
       return `Erro no agente: ${message}`
     },
     onFinish: async ({ messages }) => {
-      await saveChatMessages(config.paths, messages)
+      await persistChat(config.paths, messages)
     },
     execute: async ({ writer }) => {
       writer.write({
@@ -98,9 +103,9 @@ export async function POST(req: Request): Promise<Response> {
         type: 'data-queue',
         id: 'workflow-queue',
         data: {
-          steps: queueSteps,
+          steps: queuePlan.steps,
           currentStep: 0,
-          totalSteps: queueSteps.length,
+          totalSteps: queuePlan.totalSteps,
         },
       })
 
@@ -152,9 +157,9 @@ export async function POST(req: Request): Promise<Response> {
         type: 'data-queue',
         id: 'workflow-queue',
         data: {
-          steps: queueSteps,
-          currentStep: Math.max(0, queueSteps.length - 1),
-          totalSteps: queueSteps.length,
+          steps: queuePlan.steps,
+          currentStep: Math.max(0, queuePlan.steps.length - 1),
+          totalSteps: queuePlan.totalSteps,
         },
       })
 
