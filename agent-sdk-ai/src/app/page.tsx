@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import {
   DefaultChatTransport,
@@ -11,16 +11,63 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai'
 import type { ReversoUIMessage } from '@/types/ui-message'
+import { parseInquiryPanelData } from '@/lib/inquiry-output'
+
+// AI Elements
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+  ConversationEmptyState,
+} from '@/components/ai-elements/conversation'
+import {
+  Message,
+  MessageContent,
+  MessageResponse,
+} from '@/components/ai-elements/message'
+import {
+  Reasoning,
+  ReasoningTrigger,
+  ReasoningContent,
+} from '@/components/ai-elements/reasoning'
+import {
+  Confirmation,
+  ConfirmationTitle,
+  ConfirmationRequest,
+  ConfirmationActions,
+  ConfirmationAction,
+} from '@/components/ai-elements/confirmation'
+import { Suggestions, Suggestion } from '@/components/ai-elements/suggestion'
+import { Loader } from '@/components/ai-elements/loader'
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputSubmit,
+} from '@/components/ai-elements/prompt-input'
+
+// Chat components (using AI Elements internally)
 import { QueueProgress } from '@/components/chat/queue-progress'
 import { ToolCallDisplay } from '@/components/chat/tool-call-display'
 import { SourcesDisplay } from '@/components/chat/sources-display'
 import { LeadCard } from '@/components/chat/lead-card'
 import { AllegationDisplay } from '@/components/chat/allegation-display'
-import { parseInquiryPanelData } from '@/lib/inquiry-output'
 
-function json(value: unknown): string {
-  return JSON.stringify(value, null, 2)
-}
+// UI primitives
+import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+
+// Icons
+import {
+  FileTextIcon,
+  BrainIcon,
+  FolderOpenIcon,
+  SendIcon,
+} from 'lucide-react'
+
+// ── Type guards for custom data parts ──────────────────────────────────
 
 interface WorkflowDataPart {
   type: 'data-workflow'
@@ -93,29 +140,9 @@ function isSourceStatePart(part: unknown): part is SourceStateDataPart {
   )
 }
 
-function renderToolStateLabel(state: string): string {
-  switch (state) {
-    case 'input-streaming':
-      return 'recebendo input'
-    case 'input-available':
-      return 'input pronto'
-    case 'approval-requested':
-      return 'aguardando aprovação'
-    case 'approval-responded':
-      return 'aprovação respondida'
-    case 'output-available':
-      return 'concluído'
-    case 'output-error':
-      return 'erro'
-    case 'output-denied':
-      return 'negado'
-    default:
-      return state
-  }
-}
+// ── Main page ──────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  const [input, setInput] = useState('')
   const [files, setFiles] = useState<FileList | null>(null)
   const [uploadInfo, setUploadInfo] = useState<string>('')
   const [autoAccept, setAutoAccept] = useState(false)
@@ -124,9 +151,7 @@ export default function HomePage() {
     () =>
       new DefaultChatTransport({
         api: '/api/chat',
-        body: {
-          autoAccept,
-        },
+        body: { autoAccept },
       }),
     [autoAccept]
   )
@@ -145,7 +170,7 @@ export default function HomePage() {
       lastAssistantMessageIsCompleteWithApprovalResponses(options),
   })
 
-  const handleUpload = async (): Promise<string> => {
+  const handleUpload = useCallback(async (): Promise<string> => {
     if (!files || files.length === 0) return ''
 
     const formData = new FormData()
@@ -175,210 +200,179 @@ export default function HomePage() {
 
     setUploadInfo(summary)
     return summary
-  }
+  }, [files])
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (status !== 'ready') return
+  const handleSubmit = useCallback(
+    async (message: { text: string }) => {
+      if (status !== 'ready') return
 
-    let uploadSummary = ''
-    if (files && files.length > 0) {
-      uploadSummary = await handleUpload()
-      setFiles(null)
-    }
+      let uploadSummary = ''
+      if (files && files.length > 0) {
+        uploadSummary = await handleUpload()
+        setFiles(null)
+      }
 
-    const normalizedInput = input.trim()
-    const textToSend =
-      normalizedInput ||
-      (uploadSummary
-        ? `Acabei de enviar arquivos PDF. ${uploadSummary}. Siga o workflow investigativo.`
-        : '')
+      const normalizedInput = message.text.trim()
+      const textToSend =
+        normalizedInput ||
+        (uploadSummary
+          ? `Acabei de enviar arquivos PDF. ${uploadSummary}. Siga o workflow investigativo.`
+          : '')
 
-    if (!textToSend) return
+      if (!textToSend) return
 
-    await sendMessage({
-      text: textToSend,
-    })
-    setInput('')
-  }
+      await sendMessage({ text: textToSend })
+    },
+    [status, files, handleUpload, sendMessage]
+  )
+
+  const handleSuggestionClick = useCallback(
+    (suggestion: string) => {
+      if (status !== 'ready') return
+      void sendMessage({ text: suggestion })
+    },
+    [status, sendMessage]
+  )
+
+  const isLoading = status === 'submitted' || status === 'streaming'
 
   return (
-    <main
-      style={{
-        maxWidth: 1100,
-        margin: '0 auto',
-        padding: 20,
-        display: 'grid',
-        gap: 12,
-      }}
-    >
-      <header
-        style={{
-          background: 'var(--panel)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: 14,
-        }}
-      >
-        <h1 style={{ margin: 0 }}>Reverso (AI SDK)</h1>
-        <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>
-          Workflow state-aware, tools nativas, approvals e processamento externo de PDFs.
-        </p>
-        <label style={{ display: 'inline-flex', gap: 8, marginTop: 10, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
+    <div className="flex h-screen flex-col">
+      {/* ── Header ── */}
+      <header className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center gap-3">
+          <BrainIcon className="size-5 text-primary" />
+          <h1 className="text-base font-semibold">Reverso</h1>
+          <Badge variant="secondary" className="text-xs">AI SDK</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="auto-accept"
             checked={autoAccept}
-            onChange={(event) => setAutoAccept(event.target.checked)}
+            onCheckedChange={setAutoAccept}
           />
-          Auto-accept de ações sensíveis
-        </label>
+          <Label htmlFor="auto-accept" className="cursor-pointer text-xs text-muted-foreground">
+            Auto-accept
+          </Label>
+        </div>
       </header>
 
-      <section
-        style={{
-          background: 'var(--panel)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: 14,
-          minHeight: 420,
-          overflow: 'auto',
-        }}
-      >
-        {messages.length === 0 ? (
-          <p style={{ color: 'var(--muted)' }}>
-            Envie uma mensagem (ou PDFs) para iniciar a investigação.
-          </p>
-        ) : null}
-
-        {messages.map((message) => (
-          <article key={message.id} style={{ marginBottom: 16 }}>
-            <div
-              style={{
-                fontWeight: 600,
-                marginBottom: 8,
-                color: message.role === 'user' ? '#8db9ff' : '#f0f3f7',
-              }}
+      {/* ── Conversation ── */}
+      <Conversation className="flex-1">
+        <ConversationContent>
+          {messages.length === 0 ? (
+            <ConversationEmptyState
+              icon={<FolderOpenIcon className="size-8" />}
+              title="Bem-vindo ao Reverso"
+              description="Envie uma mensagem ou PDFs para iniciar a investigação."
             >
-              {message.role === 'user' ? 'Você' : 'Reverso'}
-              {message.role === 'assistant' && message.metadata?.intent ? (
-                <span style={{ color: 'var(--muted)', marginLeft: 8, fontWeight: 500 }}>
-                  (intent: {message.metadata.intent})
-                </span>
-              ) : null}
-            </div>
+              <div className="mt-4">
+                <Suggestions>
+                  <Suggestion suggestion="Olá" onClick={handleSuggestionClick} />
+                  <Suggestion suggestion="Quero fazer um deep-dive" onClick={handleSuggestionClick} />
+                  <Suggestion suggestion="Mostra meus leads" onClick={handleSuggestionClick} />
+                </Suggestions>
+              </div>
+            </ConversationEmptyState>
+          ) : null}
 
-            <div style={{ display: 'grid', gap: 8 }}>
+          {messages.map((message) => (
+            <Message key={message.id} from={message.role}>
+              {/* ── Intent badge for assistant ── */}
+              {message.role === 'assistant' && message.metadata?.intent ? (
+                <Badge variant="outline" className="w-fit text-xs">
+                  {message.metadata.intent}
+                </Badge>
+              ) : null}
+
+              {/* ── Render parts ── */}
               {message.parts.map((part, idx) => {
+                // Text
                 if (isTextUIPart(part)) {
                   return (
-                    <div
-                      key={idx}
-                      style={{
-                        whiteSpace: 'pre-wrap',
-                        background: '#11141a',
-                        border: '1px solid var(--border)',
-                        borderRadius: 8,
-                        padding: 10,
-                      }}
-                    >
-                      {part.text}
-                    </div>
+                    <MessageContent key={idx}>
+                      <MessageResponse>{part.text}</MessageResponse>
+                    </MessageContent>
                   )
                 }
 
+                // Reasoning
                 if (isReasoningUIPart(part)) {
                   return (
-                    <details
-                      key={idx}
-                      style={{
-                        background: '#12151c',
-                        border: '1px dashed var(--border)',
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
-                    >
-                      <summary style={{ cursor: 'pointer' }}>Raciocínio do modelo</summary>
-                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{part.text}</pre>
-                    </details>
+                    <Reasoning key={idx} isStreaming={status === 'streaming'}>
+                      <ReasoningTrigger />
+                      <ReasoningContent>{part.text}</ReasoningContent>
+                    </Reasoning>
                   )
                 }
 
+                // Tool call
                 if (isToolUIPart(part)) {
                   const toolName = part.type.replace('tool-', '')
+
                   return (
-                    <div
-                      key={idx}
-                      style={{
-                        background: '#11141a',
-                        border: '1px solid #2a3140',
-                        borderRadius: 8,
-                        padding: 10,
-                        display: 'grid',
-                        gap: 8,
-                      }}
-                    >
+                    <div key={idx} className="space-y-3">
                       <ToolCallDisplay
                         toolName={toolName}
-                        stateLabel={renderToolStateLabel(part.state)}
+                        state={part.state}
                         input={part.input}
                         output={part.state === 'output-available' ? part.output : undefined}
                         errorText={part.state === 'output-error' ? part.errorText : undefined}
                       />
 
+                      {/* Approval request */}
                       {part.state === 'approval-requested' ? (
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addToolApprovalResponse({
-                                id: part.approval.id,
-                                approved: true,
-                              })
-                            }
-                            style={{
-                              borderRadius: 8,
-                              border: '1px solid #2d8756',
-                              background: '#1f6b45',
-                              color: 'white',
-                              padding: '6px 10px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Aprovar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addToolApprovalResponse({
-                                id: part.approval.id,
-                                approved: false,
-                                reason: 'Operação negada pelo usuário.',
-                              })
-                            }
-                            style={{
-                              borderRadius: 8,
-                              border: '1px solid #9d4343',
-                              background: '#7f3232',
-                              color: 'white',
-                              padding: '6px 10px',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Negar
-                          </button>
-                        </div>
+                        <Confirmation
+                          approval={part.approval}
+                          state="approval-requested"
+                        >
+                          <ConfirmationTitle>
+                            <ConfirmationRequest>
+                              <p>
+                                A ferramenta <strong>{toolName}</strong> precisa de sua aprovação para executar.
+                              </p>
+                            </ConfirmationRequest>
+                          </ConfirmationTitle>
+                          <ConfirmationActions>
+                            <ConfirmationAction
+                              variant="default"
+                              onClick={() =>
+                                addToolApprovalResponse({
+                                  id: part.approval.id,
+                                  approved: true,
+                                })
+                              }
+                            >
+                              Aprovar
+                            </ConfirmationAction>
+                            <ConfirmationAction
+                              variant="destructive"
+                              onClick={() =>
+                                addToolApprovalResponse({
+                                  id: part.approval.id,
+                                  approved: false,
+                                  reason: 'Operação negada pelo usuário.',
+                                })
+                              }
+                            >
+                              Negar
+                            </ConfirmationAction>
+                          </ConfirmationActions>
+                        </Confirmation>
                       ) : null}
 
+                      {/* Approval denied */}
                       {part.state === 'output-denied' ? (
-                        <div style={{ color: '#efaaaa' }}>
+                        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                           Execução negada. Motivo: {part.approval.reason ?? 'Sem motivo informado.'}
                         </div>
                       ) : null}
 
+                      {/* Deep dive leads */}
                       {part.state === 'output-available' &&
                       toolName === 'deepDive' &&
                       Array.isArray((part.output as { topLeads?: unknown[] })?.topLeads) ? (
-                        <div style={{ display: 'grid', gap: 8 }}>
+                        <div className="space-y-2">
                           {((part.output as { topLeads: unknown[] }).topLeads ?? []).map(
                             (lead, leadIndex) => {
                               if (typeof lead !== 'string') return null
@@ -403,6 +397,7 @@ export default function HomePage() {
                         </div>
                       ) : null}
 
+                      {/* Inquiry results */}
                       {part.state === 'output-available' &&
                       toolName === 'runInquiry' &&
                       parseInquiryPanelData(part.output) ? (
@@ -412,57 +407,71 @@ export default function HomePage() {
                           const leadSlug = panelData.lead
 
                           return (
-                        <AllegationDisplay
-                          lead={leadSlug}
-                          verifiedFindings={panelData.verifiedFindingsCount}
-                          reviewQueue={panelData.reviewQueueCount}
-                          allegations={panelData.allegations}
-                          verifiedItems={panelData.verifiedItems}
-                          reviewItems={panelData.reviewItems}
-                          onAcceptAllegation={(allegationId) => {
-                            void sendMessage({
-                              text: `Aceitar alegação ${allegationId} do lead ${leadSlug}.`,
-                            })
-                          }}
-                          onRejectAllegation={(allegationId) => {
-                            void sendMessage({
-                              text: `Recusar alegação ${allegationId} do lead ${leadSlug}.`,
-                            })
-                          }}
-                          onVerifyFinding={(findingId) => {
-                            void sendMessage({
-                              text: `Verificar finding ${findingId} do lead ${leadSlug}.`,
-                            })
-                          }}
-                          onRejectFinding={(findingId) => {
-                            void sendMessage({
-                              text: `Rejeitar finding ${findingId} do lead ${leadSlug}.`,
-                            })
-                          }}
-                        />
+                            <AllegationDisplay
+                              lead={leadSlug}
+                              verifiedFindings={panelData.verifiedFindingsCount}
+                              reviewQueue={panelData.reviewQueueCount}
+                              allegations={panelData.allegations}
+                              verifiedItems={panelData.verifiedItems}
+                              reviewItems={panelData.reviewItems}
+                              onAcceptAllegation={(allegationId) => {
+                                void sendMessage({
+                                  text: `Aceitar alegação ${allegationId} do lead ${leadSlug}.`,
+                                })
+                              }}
+                              onRejectAllegation={(allegationId) => {
+                                void sendMessage({
+                                  text: `Recusar alegação ${allegationId} do lead ${leadSlug}.`,
+                                })
+                              }}
+                              onVerifyFinding={(findingId) => {
+                                void sendMessage({
+                                  text: `Verificar finding ${findingId} do lead ${leadSlug}.`,
+                                })
+                              }}
+                              onRejectFinding={(findingId) => {
+                                void sendMessage({
+                                  text: `Rejeitar finding ${findingId} do lead ${leadSlug}.`,
+                                })
+                              }}
+                            />
                           )
                         })()
+                      ) : null}
+
+                      {/* Quick research sources */}
+                      {part.state === 'output-available' &&
+                      toolName === 'quickResearch' &&
+                      Array.isArray((part.output as { sources?: unknown[] })?.sources) ? (
+                        <SourcesDisplay
+                          sources={
+                            ((part.output as { sources: Array<{ docId?: string; fileName?: string }> }).sources ?? []).map((s) => ({
+                              id: s.docId,
+                              title: s.fileName,
+                            }))
+                          }
+                        />
                       ) : null}
                     </div>
                   )
                 }
 
+                // Workflow phase
                 if (isWorkflowPart(part)) {
                   return (
                     <div
                       key={idx}
-                      style={{
-                        background: '#0f2331',
-                        border: '1px solid #2e526f',
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
+                      className="flex items-center gap-2 rounded-md border border-blue-500/20 bg-blue-500/5 px-3 py-2 text-sm"
                     >
-                      <strong>Workflow</strong>: {part.data.phase} — {part.data.message}
+                      <Badge variant="secondary" className="text-xs">
+                        {part.data.phase}
+                      </Badge>
+                      <span className="text-muted-foreground">{part.data.message}</span>
                     </div>
                   )
                 }
 
+                // Queue progress
                 if (isQueuePart(part)) {
                   return (
                     <QueueProgress
@@ -474,133 +483,139 @@ export default function HomePage() {
                   )
                 }
 
+                // Suggestions
                 if (isSuggestionPart(part)) {
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                        background: '#121825',
-                        border: '1px solid #2c3b56',
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2 rounded-md border px-3 py-2 text-sm"
                     >
-                      <strong>{part.data.title}</strong>: {part.data.action}
+                      <span className="font-medium">{part.data.title}:</span>
+                      <span className="text-muted-foreground">{part.data.action}</span>
                     </div>
                   )
                 }
 
+                // Source state
                 if (isSourceStatePart(part)) {
                   return (
                     <div
                       key={idx}
-                      style={{
-                        background: '#1a222b',
-                        border: '1px solid #3f5368',
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
+                      className="rounded-md border px-3 py-2.5 space-y-1"
                     >
-                      <strong>Estado da source</strong>
-                      <div style={{ fontSize: 13, marginTop: 4 }}>
-                        {part.data.sourceEmpty ? 'Sem PDFs na source.' : 'PDFs detectados na source.'}
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <FileTextIcon className="size-4 text-muted-foreground" />
+                        Estado da Source
                       </div>
-                      <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-                        Processados: {part.data.processed} · Pendentes: {part.data.pending} · Falhas:{' '}
-                        {part.data.failed}
+                      <p className="text-sm text-muted-foreground">
+                        {part.data.sourceEmpty
+                          ? 'Sem PDFs na source.'
+                          : 'PDFs detectados na source.'}
+                      </p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>Processados: {part.data.processed}</span>
+                        <span>Pendentes: {part.data.pending}</span>
+                        <span>Falhas: {part.data.failed}</span>
                       </div>
                     </div>
                   )
                 }
 
-                if (part.type.startsWith('source')) {
-                  return <SourcesDisplay key={idx} source={part} />
+                // Source references (from sendSources)
+                if ((part as { type?: string }).type?.startsWith('source')) {
+                  const source = part as unknown as { title?: string; url?: string; id?: string }
+                  return (
+                    <SourcesDisplay
+                      key={idx}
+                      sources={[{
+                        title: source.title,
+                        url: source.url,
+                        id: source.id,
+                      }]}
+                    />
+                  )
                 }
 
+                // Internal workflow signal parts; skip rendering
+                if (['step-start', 'step-finish', 'finish'].includes(
+                  (part as { type?: string }).type ?? ''
+                )) {
+                  return null
+                }
+
+                // Unhandled part
                 const unhandledType =
                   typeof (part as { type?: unknown }).type === 'string'
                     ? ((part as { type: string }).type as string)
                     : 'desconhecido'
-
                 return (
-                  <div key={idx} style={{ color: 'var(--muted)' }}>
+                  <div key={idx} className="text-xs text-muted-foreground">
                     Parte não renderizada: {unhandledType}
                   </div>
                 )
               })}
-            </div>
-          </article>
-        ))}
-      </section>
+            </Message>
+          ))}
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'grid',
-          gap: 10,
-          background: 'var(--panel)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          padding: 14,
-        }}
-      >
-        <textarea
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Peça deep-dive, inquiry, quick research ou consulte dados..."
-          rows={4}
-          style={{
-            width: '100%',
-            resize: 'vertical',
-            background: '#10131a',
-            color: 'var(--text)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: 10,
-          }}
-        />
+          {/* Loading indicator */}
+          {isLoading && messages.length > 0 ? (
+            <Message from="assistant">
+              <MessageContent>
+                <Loader />
+              </MessageContent>
+            </Message>
+          ) : null}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <input
-            type="file"
-            multiple
-            accept="application/pdf"
-            onChange={(event) => setFiles(event.target.files)}
+      {/* ── Input area ── */}
+      <div className="border-t px-4 py-3">
+        {uploadInfo ? (
+          <div className="mb-2 rounded-md border border-blue-500/20 bg-blue-500/5 px-3 py-1.5 text-xs text-blue-400">
+            {uploadInfo}
+          </div>
+        ) : null}
+        {error ? (
+          <div className="mb-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs text-destructive">
+            {error.message}
+          </div>
+        ) : null}
+
+        <PromptInput
+          onSubmit={(message) => void handleSubmit(message)}
+          accept="application/pdf"
+          multiple
+        >
+          <PromptInputTextarea
+            placeholder="Peça deep-dive, inquiry, quick research ou consulte dados..."
           />
-          <button
-            type="submit"
-            disabled={status !== 'ready'}
-            style={{
-              borderRadius: 8,
-              border: '1px solid #316aa8',
-              background: '#24598f',
-              color: 'white',
-              padding: '8px 14px',
-              cursor: 'pointer',
-            }}
-          >
-            Enviar
-          </button>
-          <button
-            type="button"
-            onClick={() => stop()}
-            style={{
-              borderRadius: 8,
-              border: '1px solid #5a6376',
-              background: '#3d4453',
-              color: 'white',
-              padding: '8px 14px',
-              cursor: 'pointer',
-            }}
-          >
-            Interromper stream
-          </button>
-          <span style={{ color: 'var(--muted)' }}>status: {status}</span>
-        </div>
-
-        {uploadInfo ? <div style={{ color: '#9dc6ff' }}>{uploadInfo}</div> : null}
-        {error ? <div style={{ color: 'var(--danger)' }}>{error.message}</div> : null}
-      </form>
-    </main>
+          <PromptInputFooter>
+            <PromptInputTools>
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="file"
+                  multiple
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={(e) => setFiles(e.target.files)}
+                />
+                <FileTextIcon className="size-3.5" />
+                PDF
+              </label>
+              {files && files.length > 0 ? (
+                <Badge variant="outline" className="text-xs">
+                  {files.length} arquivo(s)
+                </Badge>
+              ) : null}
+            </PromptInputTools>
+            <PromptInputSubmit
+              status={status}
+              onStop={() => stop()}
+            />
+          </PromptInputFooter>
+        </PromptInput>
+      </div>
+    </div>
   )
 }

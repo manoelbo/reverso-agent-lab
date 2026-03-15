@@ -1,3 +1,12 @@
+'use client'
+
+import {
+  Queue,
+  QueueItem,
+  QueueItemIndicator,
+  QueueItemContent,
+} from '@/components/ai-elements/queue'
+
 interface QueueProgressProps {
   steps: string[]
   currentStep: number
@@ -6,30 +15,25 @@ interface QueueProgressProps {
 
 export function QueueProgress({ steps, currentStep, totalSteps }: QueueProgressProps) {
   return (
-    <div
-      style={{
-        background: '#1a1f2e',
-        border: '1px solid #424f7a',
-        borderRadius: 8,
-        padding: 8,
-      }}
-    >
-      <strong>
+    <Queue>
+      <div className="px-1 pb-1 text-xs font-medium text-muted-foreground">
         Fila ({Math.min(currentStep + 1, totalSteps)}/{totalSteps})
-      </strong>
-      <ol style={{ margin: '6px 0 0 18px' }}>
+      </div>
+      <ul className="space-y-0.5">
         {steps.map((step, stepIndex) => (
-          <li
-            key={`${stepIndex}-${step}`}
-            style={{
-              color: stepIndex === currentStep ? '#b4d2ff' : 'var(--muted)',
-              fontWeight: stepIndex === currentStep ? 600 : 400,
-            }}
-          >
-            {step}
-          </li>
+          <QueueItem key={`${stepIndex}-${step}`}>
+            <div className="flex items-center gap-2">
+              <QueueItemIndicator completed={stepIndex < currentStep} />
+              <QueueItemContent
+                completed={stepIndex < currentStep}
+                className={stepIndex === currentStep ? 'font-semibold text-foreground' : ''}
+              >
+                {step}
+              </QueueItemContent>
+            </div>
+          </QueueItem>
         ))}
-      </ol>
-    </div>
+      </ul>
+    </Queue>
   )
 }

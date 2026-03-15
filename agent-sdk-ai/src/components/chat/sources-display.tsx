@@ -1,16 +1,41 @@
+'use client'
+
+import {
+  Sources,
+  SourcesTrigger,
+  SourcesContent,
+  Source,
+} from '@/components/ai-elements/sources'
+
+interface SourceItem {
+  title?: string
+  url?: string
+  id?: string
+}
+
 interface SourcesDisplayProps {
-  source: unknown
+  sources: SourceItem[]
 }
 
-function prettySource(source: unknown): string {
-  if (typeof source !== 'object' || source === null) return String(source)
-  const value = source as Record<string, unknown>
-  if (typeof value['title'] === 'string') return value['title']
-  if (typeof value['url'] === 'string') return value['url']
-  if (typeof value['id'] === 'string') return value['id']
-  return JSON.stringify(source)
+function prettySourceTitle(source: SourceItem): string {
+  return source.title ?? source.url ?? source.id ?? 'Fonte'
 }
 
-export function SourcesDisplay({ source }: SourcesDisplayProps) {
-  return <div style={{ color: 'var(--muted)' }}>Fonte: {prettySource(source)}</div>
+export function SourcesDisplay({ sources }: SourcesDisplayProps) {
+  if (sources.length === 0) return null
+
+  return (
+    <Sources>
+      <SourcesTrigger count={sources.length} />
+      <SourcesContent>
+        {sources.map((source, idx) => (
+          <Source
+            key={source.id ?? idx}
+            href={source.url}
+            title={prettySourceTitle(source)}
+          />
+        ))}
+      </SourcesContent>
+    </Sources>
+  )
 }
