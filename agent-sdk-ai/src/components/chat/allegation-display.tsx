@@ -1,3 +1,16 @@
+'use client'
+
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card'
+import { CheckCircleIcon, XCircleIcon, AlertTriangleIcon, ShieldCheckIcon } from 'lucide-react'
+
 interface AllegationDisplayProps {
   lead: string
   verifiedFindings: number
@@ -24,148 +37,122 @@ export function AllegationDisplay({
   onRejectFinding,
 }: AllegationDisplayProps) {
   return (
-    <div
-      style={{
-        background: '#161d24',
-        border: '1px solid #3e4f5f',
-        borderRadius: 8,
-        padding: 10,
-        display: 'grid',
-        gap: 6,
-      }}
-    >
-      <strong>Resultado do inquiry ({lead})</strong>
-      <div style={{ color: '#a7d3b7' }}>Findings verificados: {verifiedFindings}</div>
-      <div style={{ color: '#f1cda0' }}>Em review queue: {reviewQueue}</div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ShieldCheckIcon className="size-5 text-primary" />
+          Resultado do Inquiry — {lead}
+        </CardTitle>
+        <div className="flex items-center gap-3 pt-1">
+          <Badge variant="secondary" className="gap-1">
+            <CheckCircleIcon className="size-3" />
+            {verifiedFindings} verificados
+          </Badge>
+          <Badge variant="outline" className="gap-1">
+            <AlertTriangleIcon className="size-3" />
+            {reviewQueue} em revisão
+          </Badge>
+        </div>
+      </CardHeader>
 
       {allegations.length > 0 ? (
-        <div style={{ display: 'grid', gap: 6 }}>
-          <strong style={{ fontSize: 13 }}>Alegações</strong>
+        <CardContent className="space-y-3">
+          <h4 className="text-sm font-semibold">Alegações</h4>
           {allegations.map((item) => (
             <div
               key={item.id}
-              style={{
-                display: 'grid',
-                gap: 6,
-                border: '1px solid #304254',
-                borderRadius: 6,
-                padding: 8,
-              }}
+              className="rounded-lg border p-3 space-y-2"
             >
-              <div style={{ fontSize: 13 }}>
-                <strong>{item.id}</strong>: {item.statement}
+              <div className="text-sm">
+                <span className="font-mono text-xs text-muted-foreground">{item.id}</span>
+                <p className="mt-1">{item.statement}</p>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="default"
                   onClick={() => onAcceptAllegation?.(item.id)}
-                  style={{
-                    borderRadius: 8,
-                    border: '1px solid #2d8756',
-                    background: '#1f6b45',
-                    color: 'white',
-                    padding: '6px 10px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Aceitar alegação
-                </button>
-                <button
-                  type="button"
+                  <CheckCircleIcon className="size-3.5 mr-1" />
+                  Aceitar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
                   onClick={() => onRejectAllegation?.(item.id)}
-                  style={{
-                    borderRadius: 8,
-                    border: '1px solid #9d4343',
-                    background: '#7f3232',
-                    color: 'white',
-                    padding: '6px 10px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Recusar alegação
-                </button>
+                  <XCircleIcon className="size-3.5 mr-1" />
+                  Recusar
+                </Button>
               </div>
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : null}
 
       {verifiedItems.length > 0 ? (
-        <div style={{ display: 'grid', gap: 6 }}>
-          <strong style={{ fontSize: 13, color: '#a7d3b7' }}>Findings já verificados</strong>
+        <CardContent className="space-y-2">
+          <h4 className="flex items-center gap-1.5 text-sm font-semibold text-green-600 dark:text-green-400">
+            <CheckCircleIcon className="size-3.5" />
+            Findings Verificados
+          </h4>
           {verifiedItems.map((item) => (
             <div
               key={item.id}
-              style={{
-                border: '1px solid #2f5b40',
-                borderRadius: 6,
-                padding: 8,
-                fontSize: 13,
-              }}
+              className="rounded-md border border-green-500/30 bg-green-500/5 p-2.5 text-sm"
             >
-              <strong>{item.id}</strong>: {item.claim}
+              <span className="font-mono text-xs text-muted-foreground">{item.id}</span>
+              <p className="mt-0.5">{item.claim}</p>
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : null}
 
       {reviewItems.length > 0 ? (
-        <div style={{ display: 'grid', gap: 6 }}>
-          <strong style={{ fontSize: 13, color: '#f1cda0' }}>Findings para revisão</strong>
+        <CardContent className="space-y-2">
+          <h4 className="flex items-center gap-1.5 text-sm font-semibold text-amber-600 dark:text-amber-400">
+            <AlertTriangleIcon className="size-3.5" />
+            Findings para Revisão
+          </h4>
           {reviewItems.map((item) => (
             <div
               key={item.id}
-              style={{
-                display: 'grid',
-                gap: 6,
-                border: '1px solid #6d5938',
-                borderRadius: 6,
-                padding: 8,
-              }}
+              className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 space-y-2"
             >
-              <div style={{ fontSize: 13 }}>
-                <strong>{item.id}</strong>: {item.claim}
+              <div className="text-sm">
+                <span className="font-mono text-xs text-muted-foreground">{item.id}</span>
+                <p className="mt-0.5">{item.claim}</p>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
+              <div className="flex items-center gap-2">
+                <Button
+                  size="xs"
+                  variant="outline"
                   onClick={() => onVerifyFinding?.(item.id)}
-                  style={{
-                    borderRadius: 8,
-                    border: '1px solid #2d8756',
-                    background: '#1f6b45',
-                    color: 'white',
-                    padding: '6px 10px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Verificar finding
-                </button>
-                <button
-                  type="button"
+                  <CheckCircleIcon className="size-3 mr-1" />
+                  Verificar
+                </Button>
+                <Button
+                  size="xs"
+                  variant="destructive"
                   onClick={() => onRejectFinding?.(item.id)}
-                  style={{
-                    borderRadius: 8,
-                    border: '1px solid #9d4343',
-                    background: '#7f3232',
-                    color: 'white',
-                    padding: '6px 10px',
-                    cursor: 'pointer',
-                  }}
                 >
-                  Rejeitar finding
-                </button>
+                  <XCircleIcon className="size-3 mr-1" />
+                  Rejeitar
+                </Button>
               </div>
             </div>
           ))}
-        </div>
+        </CardContent>
       ) : null}
 
       {reviewQueue > 0 ? (
-        <div style={{ color: 'var(--muted)', fontSize: 13 }}>
-          Sugestão: revisar evidências fracas e executar nova rodada de inquiry.
-        </div>
+        <CardFooter>
+          <p className="text-xs text-muted-foreground">
+            Sugestão: revise as evidências e execute nova rodada de inquiry se necessário.
+          </p>
+        </CardFooter>
       ) : null}
-    </div>
+    </Card>
   )
 }
