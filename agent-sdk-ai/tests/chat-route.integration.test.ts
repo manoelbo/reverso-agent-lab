@@ -2,7 +2,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import os from 'node:os'
 import path from 'node:path'
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { POST } from '../src/app/api/chat/route'
 
 function createUserMessage(text: string) {
@@ -159,5 +159,35 @@ describe('/api/chat route integration', () => {
 
     assert.equal(response.status, 200)
     assert.ok(payload.includes('Execute initContext'))
+  })
+
+  it('persiste histórico da conversa ao finalizar o stream', async () => {
+    const filesystemRoot = await prepareFilesystemRoot()
+    const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))
+    process.env['REVERSO_FILESYSTEM_ROOT'] = filesystemRoot
+    process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+    process.env['AI_GATEWAY_API_KEY'] = ''
+    process.env['OPENROUTER_API_KEY'] = ''
+
+    const request = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: createUserMessage('oi'),
+        autoAccept: false,
+      }),
+    })
+
+    const response = await POST(request)
+    await response.text()
+
+    const sessionRaw = await readFile(
+      path.join(filesystemRoot, 'sessions', 'sdk-chat', 'default.json'),
+      'utf8'
+    )
+    const session = JSON.parse(sessionRaw) as { messages?: unknown[]; id?: string }
+    assert.equal(session.id, 'default')
+    assert.ok(Array.isArray(session.messages))
+    assert.ok((session.messages ?? []).length >= 1)
   })
 })
