@@ -46,4 +46,31 @@ describe('/api/upload route', () => {
     assert.equal(secondPayload.accepted.length, 0)
     assert.equal(secondPayload.rejected[0]?.fileName, 'doc-a.pdf')
   })
+
+  it('rejeita arquivo não-PDF', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'reverso-upload-'))
+    const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-legacy-'))
+    process.env['REVERSO_FILESYSTEM_ROOT'] = root
+    process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+
+    const formData = new FormData()
+    formData.append(
+      'files',
+      new File([Buffer.from('csv-content')], 'dados.csv', { type: 'text/csv' })
+    )
+
+    const request = new Request('http://localhost/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const response = await POST(request)
+    const payload = (await response.json()) as {
+      accepted: string[]
+      rejected: Array<{ fileName: string; reason: string }>
+    }
+
+    assert.equal(payload.accepted.length, 0)
+    assert.equal(payload.rejected[0]?.fileName, 'dados.csv')
+    assert.ok((payload.rejected[0]?.reason ?? '').includes('apenas PDF'))
+  })
 })

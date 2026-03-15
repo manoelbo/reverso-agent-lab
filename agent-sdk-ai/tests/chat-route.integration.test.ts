@@ -276,4 +276,43 @@ describe('/api/chat route integration', () => {
     assert.ok(idxInit > idxProcess)
     assert.ok(idxIntent > idxInit)
   })
+
+  it('inclui passo de continuidade quando há sessão deep-dive ativa', async () => {
+    const filesystemRoot = await prepareFilesystemRoot()
+    const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))
+    process.env['REVERSO_FILESYSTEM_ROOT'] = filesystemRoot
+    process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+    process.env['AI_GATEWAY_API_KEY'] = ''
+    process.env['OPENROUTER_API_KEY'] = ''
+
+    const deepDiveDir = path.join(filesystemRoot, 'sessions', 'deep-dive')
+    await mkdir(deepDiveDir, { recursive: true })
+    await writeFile(
+      path.join(deepDiveDir, 'active-session.json'),
+      JSON.stringify({ sessionId: 'sess-ativa' }, null, 2),
+      'utf8'
+    )
+    await writeFile(
+      path.join(deepDiveDir, 'sess-ativa.json'),
+      JSON.stringify({ stage: 'awaiting_plan_decision', sessionId: 'sess-ativa' }, null, 2),
+      'utf8'
+    )
+
+    const request = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: createUserMessage('continue'),
+        autoAccept: false,
+      }),
+    })
+
+    const response = await POST(request)
+    const payload = await response.text()
+    const steps = firstQueuePart(payload)?.data?.steps ?? []
+
+    assert.equal(response.status, 200)
+    assert.ok(steps.some((step) => step.includes('sessão deep-dive ativa')))
+    assert.ok(steps.some((step) => step.includes('Atender intenção: deep_dive_next')))
+  })
 })
