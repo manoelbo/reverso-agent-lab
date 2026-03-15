@@ -116,6 +116,16 @@ export function heuristicIntent(text: string): IntentDecision | undefined {
     return { intent: 'init', confidence: 0.9, reason: 'pedido explícito de init' }
   }
 
+  if (
+    normalized.includes('resuma') ||
+    normalized.includes('resumo') ||
+    normalized.includes('pontos principais') ||
+    normalized.includes('o que voce encontrou') ||
+    normalized.includes('oque voce encontrou')
+  ) {
+    return { intent: 'quick_research', confidence: 0.77, reason: 'pedido de síntese objetiva' }
+  }
+
   const hasQuestion =
     normalized.includes('?') ||
     normalized.startsWith('quem ') ||
@@ -133,21 +143,29 @@ export async function classifyIntent(userText: string): Promise<IntentDecision> 
   const heuristic = heuristicIntent(userText)
   if (heuristic) return heuristic
 
-  const result = await generateText({
-    model: resolveLanguageModel(),
-    output: classifierOutput,
-    temperature: 0,
-    prompt: [
-      'Classifique a intenção do usuário para um agente investigativo.',
-      'Retorne apenas conforme schema.',
-      '',
-      `Texto: ${userText}`,
-    ].join('\n'),
-  })
+  try {
+    const result = await generateText({
+      model: resolveLanguageModel(),
+      output: classifierOutput,
+      temperature: 0,
+      prompt: [
+        'Classifique a intenção do usuário para um agente investigativo.',
+        'Retorne apenas conforme schema.',
+        '',
+        `Texto: ${userText}`,
+      ].join('\n'),
+    })
 
-  return {
-    intent: result.output.intent,
-    confidence: result.output.confidence,
-    reason: result.output.reason,
+    return {
+      intent: result.output.intent,
+      confidence: result.output.confidence,
+      reason: result.output.reason,
+    }
+  } catch {
+    return {
+      intent: 'general_chat',
+      confidence: 0.4,
+      reason: 'fallback_heuristico_sem_modelo',
+    }
   }
 }

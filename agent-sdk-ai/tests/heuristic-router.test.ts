@@ -38,4 +38,10 @@ describe('heuristicIntent', () => {
     assert.ok(decision)
     assert.equal(decision.intent, 'run_inquiry')
   })
+
+  it('detecta pedido de resumo como quick research', () => {
+    const decision = heuristicIntent('resuma os pontos principais')
+    assert.ok(decision)
+    assert.equal(decision.intent, 'quick_research')
+  })
 })
