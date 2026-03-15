@@ -34,7 +34,9 @@ function asBool(value: string | undefined, fallback: boolean): boolean {
 export function resolveConfig(): ReversoConfig {
   const projectRoot = process.cwd()
   const legacyRoot = path.resolve(
-    process.env['REVERSO_LEGACY_ROOT'] ?? path.join(projectRoot, '..', 'agent')
+    process.env['REVERSO_AGENT_LEGACY_ROOT'] ??
+      process.env['REVERSO_LEGACY_ROOT'] ??
+      path.join(projectRoot, '..', 'agent')
   )
   const filesystemRoot = path.resolve(
     process.env['REVERSO_FILESYSTEM_ROOT'] ?? path.join(legacyRoot, 'filesystem')

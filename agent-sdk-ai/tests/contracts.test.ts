@@ -2,6 +2,9 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   createLeadPayloadSchema,
+  digComparisonResultSchema,
+  digIncrementalConclusionSchema,
+  digLinesResultSchema,
   inquiryFinalPayloadSchema,
   parseStrictJson,
 } from '../src/lib/contracts'
@@ -57,5 +60,44 @@ describe('contracts schemas', () => {
 
     const parsed = inquiryFinalPayloadSchema.safeParse(payload)
     assert.equal(parsed.success, true)
+  })
+
+  it('valida payload incremental de dig', () => {
+    const parsed = digIncrementalConclusionSchema.safeParse({
+      summary: 'Resumo inicial da investigação em andamento.',
+      keyFindings: ['Achado A'],
+      hypotheses: ['Hipótese A'],
+      gaps: ['Lacuna A'],
+    })
+    assert.equal(parsed.success, true)
+  })
+
+  it('valida payload de linhas e comparação de dig', () => {
+    const linesParsed = digLinesResultSchema.safeParse({
+      lines: [
+        {
+          title: 'Linha 1',
+          description: 'Descrição de investigação',
+          rationale: 'Racional para priorização',
+          rank: 1,
+          relatedDocIds: ['doc-a'],
+        },
+      ],
+    })
+    assert.equal(linesParsed.success, true)
+
+    const comparisonParsed = digComparisonResultSchema.safeParse({
+      topLines: [
+        {
+          title: 'Linha 1',
+          description: 'Descrição de investigação',
+          differentiation: 'Diferencial relevante',
+          rank: 1,
+        },
+      ],
+      recommendation: 'Executar linha 1 primeiro',
+      overlapNotes: ['Sem sobreposição crítica'],
+    })
+    assert.equal(comparisonParsed.success, true)
   })
 })

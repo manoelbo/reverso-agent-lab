@@ -1,5 +1,37 @@
 import { z } from 'zod'
 
+export const digIncrementalConclusionSchema = z.object({
+  summary: z.string().min(8),
+  keyFindings: z.array(z.string().min(1)).min(1),
+  hypotheses: z.array(z.string().min(1)).min(1),
+  gaps: z.array(z.string().min(1)).min(1),
+})
+
+export const digLineSchema = z.object({
+  title: z.string().min(3),
+  description: z.string().min(6),
+  rationale: z.string().min(6),
+  rank: z.number().int().positive(),
+  relatedDocIds: z.array(z.string().min(1)).optional(),
+})
+
+export const digLinesResultSchema = z.object({
+  lines: z.array(digLineSchema).min(1),
+})
+
+export const digComparisonLineSchema = z.object({
+  title: z.string().min(3),
+  description: z.string().min(6),
+  differentiation: z.string().min(6),
+  rank: z.number().int().positive(),
+})
+
+export const digComparisonResultSchema = z.object({
+  topLines: z.array(digComparisonLineSchema).min(1).max(3),
+  recommendation: z.string().min(6),
+  overlapNotes: z.array(z.string().min(1)).min(1),
+})
+
 export const inquiryPlanSchema = z.object({
   formulateAllegations: z.array(z.string().min(1)).min(1),
   defineSearchStrategy: z.array(z.string().min(1)).min(1),
@@ -96,6 +128,9 @@ export type InquiryExecutionPlan = z.infer<typeof inquiryExecutionPlanSchema>
 export type InquiryFinalPayload = z.infer<typeof inquiryFinalPayloadSchema>
 export type InquiryFinding = z.infer<typeof inquiryFinalFindingSchema>
 export type InquiryEvidence = z.infer<typeof inquiryEvidenceSchema>
+export type DigIncrementalConclusion = z.infer<typeof digIncrementalConclusionSchema>
+export type DigLinesResult = z.infer<typeof digLinesResultSchema>
+export type DigComparisonResult = z.infer<typeof digComparisonResultSchema>
 
 export function parseStrictJson(raw: string): unknown {
   const cleaned = raw.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim()
