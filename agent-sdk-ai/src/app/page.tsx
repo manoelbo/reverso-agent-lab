@@ -536,8 +536,10 @@ export default function HomePage() {
                   )
                 }
 
-                // Step-start parts are internal workflow signals; skip rendering
-                if ((part as { type?: string }).type === 'step-start') {
+                // Internal workflow signal parts; skip rendering
+                if (['step-start', 'step-finish', 'finish'].includes(
+                  (part as { type?: string }).type ?? ''
+                )) {
                   return null
                 }
 
