@@ -127,4 +127,56 @@ describe('loadWorkflowSnapshot', () => {
       snapshot.guidance.preflight.some((line) => line.includes('sessão deep-dive ativa'))
     )
   })
+
+  it('ignora sessão deep-dive expirada pelo TTL ao montar workflow', async () => {
+    const previousTtl = process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+    process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = '1000'
+    try {
+      const paths = await createMinimalPaths()
+      const deepDiveDir = path.join(paths.filesystemRoot, 'sessions', 'deep-dive')
+      await mkdir(deepDiveDir, { recursive: true })
+      await writeFile(
+        path.join(deepDiveDir, 'active-session.json'),
+        JSON.stringify({ sessionId: 'sess-expirada' }, null, 2),
+        'utf8'
+      )
+      await writeFile(
+        path.join(deepDiveDir, 'sess-expirada.json'),
+        JSON.stringify(
+          {
+            stage: 'awaiting_plan_decision',
+            sessionId: 'sess-expirada',
+            updatedAt: '2000-01-01T00:00:00.000Z',
+          },
+          null,
+          2
+        ),
+        'utf8'
+      )
+
+      const snapshot = await loadWorkflowSnapshot({
+        paths,
+        userText: 'continue',
+        classifyIntent: async () => ({
+          intent: 'deep_dive_next',
+          confidence: 0.83,
+          reason: 'continuidade',
+        }),
+      })
+
+      assert.equal(snapshot.session, undefined)
+      assert.equal(snapshot.guidance.shouldPrioritizeDeepDiveSession, false)
+      assert.ok(
+        !snapshot.guidance.preflight.some((line) =>
+          line.includes('sessão deep-dive ativa')
+        )
+      )
+    } finally {
+      if (previousTtl === undefined) {
+        delete process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+      } else {
+        process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = previousTtl
+      }
+    }
+  })
 })
