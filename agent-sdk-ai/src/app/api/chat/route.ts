@@ -1,4 +1,4 @@
-import { createAgentUIStreamResponse } from 'ai'
+import { createAgentUIStream, createUIMessageStream, createUIMessageStreamResponse } from 'ai'
 import { classifyIntent } from '@/agent/router'
 import { buildSystemPrompt } from '@/agent/system-prompt'
 import { buildWorkflowGuidance } from '@/agent/workflow-engine'
@@ -6,6 +6,7 @@ import { createReversoAgent } from '@/agent/reverso-agent'
 import { resolveConfig } from '@/lib/config'
 import { detectSystemState } from '@/lib/source-state'
 import { loadActiveDeepDiveSession, saveChatMessages } from '@/lib/session-store'
+import type { ReversoUIMessage } from '@/types/ui-message'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -46,6 +47,7 @@ export async function POST(req: Request): Promise<Response> {
   const config = resolveConfig()
   const body = (await req.json()) as ChatRequestBody
   const uiMessages = normalizeMessages(body.messages)
+  const originalMessages = uiMessages as ReversoUIMessage[]
   const userText = extractLatestUserText(uiMessages)
 
   const [state, session, intent] = await Promise.all([
@@ -70,15 +72,11 @@ export async function POST(req: Request): Promise<Response> {
   ].join('\n')
 
   const agent = createReversoAgent({ dynamicInstructions })
+  const autoAccept = body.autoAccept ?? config.autoAcceptDefault
+  const queueSteps = [...workflow.preflight, `Atender intenção: ${intent.intent}`]
 
-  return createAgentUIStreamResponse({
-    agent,
-    uiMessages,
-    options: {
-      autoAccept: body.autoAccept ?? config.autoAcceptDefault,
-    },
-    sendReasoning: true,
-    sendSources: true,
+  const stream = createUIMessageStream<ReversoUIMessage>({
+    originalMessages,
     onError: (error) => {
       const message = error instanceof Error ? error.message : String(error)
       return `Erro no agente: ${message}`
@@ -86,5 +84,83 @@ export async function POST(req: Request): Promise<Response> {
     onFinish: async ({ messages }) => {
       await saveChatMessages(config.paths, messages)
     },
+    execute: async ({ writer }) => {
+      writer.write({
+        type: 'data-workflow',
+        data: {
+          phase: 'preflight',
+          message: 'Analisando estado do sistema e planejando fila de execução.',
+        },
+        transient: true,
+      })
+
+      writer.write({
+        type: 'data-queue',
+        id: 'workflow-queue',
+        data: {
+          steps: queueSteps,
+          currentStep: 0,
+          totalSteps: queueSteps.length,
+        },
+      })
+
+      writer.write({
+        type: 'data-suggestion',
+        data: {
+          title: 'Modo de aprovação',
+          action: autoAccept
+            ? 'Auto-accept está ativo; ferramentas sensíveis serão executadas automaticamente.'
+            : 'Auto-accept está desligado; você precisará aprovar ferramentas sensíveis.',
+        },
+        transient: true,
+      })
+
+      const agentStream = await createAgentUIStream({
+        agent,
+        uiMessages,
+        options: {
+          autoAccept,
+        },
+        sendReasoning: true,
+        sendSources: true,
+        messageMetadata: ({ part }) => {
+          if (part.type === 'start') {
+            return {
+              intent: intent.intent,
+              confidence: intent.confidence,
+              timestamp: Date.now(),
+            }
+          }
+          return undefined
+        },
+        onError: (error) => {
+          const message = error instanceof Error ? error.message : String(error)
+          return `Erro no agente: ${message}`
+        },
+      })
+
+      writer.write({
+        type: 'data-workflow',
+        data: {
+          phase: 'execution',
+          message: 'Executando ações do workflow com tool loop.',
+        },
+        transient: true,
+      })
+
+      writer.write({
+        type: 'data-queue',
+        id: 'workflow-queue',
+        data: {
+          steps: queueSteps,
+          currentStep: Math.max(0, queueSteps.length - 1),
+          totalSteps: queueSteps.length,
+        },
+      })
+
+      writer.merge(agentStream)
+    },
   })
+
+  return createUIMessageStreamResponse({ stream })
 }

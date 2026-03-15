@@ -10,9 +10,62 @@ import {
   lastAssistantMessageIsCompleteWithApprovalResponses,
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai'
+import type { ReversoUIMessage } from '@/types/ui-message'
 
 function json(value: unknown): string {
   return JSON.stringify(value, null, 2)
+}
+
+interface WorkflowDataPart {
+  type: 'data-workflow'
+  data: {
+    phase: 'preflight' | 'execution' | 'summary'
+    message: string
+  }
+}
+
+interface QueueDataPart {
+  type: 'data-queue'
+  data: {
+    steps: string[]
+    currentStep: number
+    totalSteps: number
+  }
+}
+
+interface SuggestionDataPart {
+  type: 'data-suggestion'
+  data: {
+    title: string
+    action: string
+  }
+}
+
+function isWorkflowPart(part: unknown): part is WorkflowDataPart {
+  return (
+    typeof part === 'object' &&
+    part !== null &&
+    (part as { type?: unknown }).type === 'data-workflow' &&
+    typeof (part as { data?: { message?: unknown } }).data?.message === 'string'
+  )
+}
+
+function isQueuePart(part: unknown): part is QueueDataPart {
+  return (
+    typeof part === 'object' &&
+    part !== null &&
+    (part as { type?: unknown }).type === 'data-queue' &&
+    Array.isArray((part as { data?: { steps?: unknown } }).data?.steps)
+  )
+}
+
+function isSuggestionPart(part: unknown): part is SuggestionDataPart {
+  return (
+    typeof part === 'object' &&
+    part !== null &&
+    (part as { type?: unknown }).type === 'data-suggestion' &&
+    typeof (part as { data?: { action?: unknown } }).data?.action === 'string'
+  )
 }
 
 function renderToolStateLabel(state: string): string {
@@ -60,7 +113,7 @@ export default function HomePage() {
     sendMessage,
     stop,
     addToolApprovalResponse,
-  } = useChat({
+  } = useChat<ReversoUIMessage>({
     transport,
     sendAutomaticallyWhen: (options) =>
       lastAssistantMessageIsCompleteWithToolCalls(options) ||
@@ -182,6 +235,11 @@ export default function HomePage() {
               }}
             >
               {message.role === 'user' ? 'Você' : 'Reverso'}
+              {message.role === 'assistant' && message.metadata?.intent ? (
+                <span style={{ color: 'var(--muted)', marginLeft: 8, fontWeight: 500 }}>
+                  (intent: {message.metadata.intent})
+                </span>
+              ) : null}
             </div>
 
             <div style={{ display: 'grid', gap: 8 }}>
@@ -310,19 +368,65 @@ export default function HomePage() {
                   )
                 }
 
-                if (part.type.startsWith('data-') && 'data' in part) {
+                if (isWorkflowPart(part)) {
                   return (
                     <div
                       key={idx}
                       style={{
+                        background: '#0f2331',
+                        border: '1px solid #2e526f',
+                        borderRadius: 8,
+                        padding: 8,
+                      }}
+                    >
+                      <strong>Workflow</strong>: {part.data.phase} — {part.data.message}
+                    </div>
+                  )
+                }
+
+                if (isQueuePart(part)) {
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#1a1f2e',
+                        border: '1px solid #424f7a',
+                        borderRadius: 8,
+                        padding: 8,
+                      }}
+                    >
+                      <strong>Fila ({part.data.currentStep + 1}/{part.data.totalSteps})</strong>
+                      <ol style={{ margin: '6px 0 0 18px' }}>
+                        {part.data.steps.map((step: string, stepIndex: number) => (
+                          <li
+                            key={stepIndex}
+                            style={{
+                              color:
+                                stepIndex === part.data.currentStep
+                                  ? '#b4d2ff'
+                                  : 'var(--muted)',
+                            }}
+                          >
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )
+                }
+
+                if (isSuggestionPart(part)) {
+                    return (
+                      <div
+                        key={idx}
+                        style={{
                         background: '#121825',
                         border: '1px solid #2c3b56',
                         borderRadius: 8,
                         padding: 8,
                       }}
                     >
-                      <strong>{part.type}</strong>
-                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.data)}</pre>
+                      <strong>{part.data.title}</strong>: {part.data.action}
                     </div>
                   )
                 }
@@ -335,9 +439,14 @@ export default function HomePage() {
                   )
                 }
 
+                const unhandledType =
+                  typeof (part as { type?: unknown }).type === 'string'
+                    ? ((part as { type: string }).type as string)
+                    : 'desconhecido'
+
                 return (
                   <div key={idx} style={{ color: 'var(--muted)' }}>
-                    Parte não renderizada: {part.type}
+                    Parte não renderizada: {unhandledType}
                   </div>
                 )
               })}
