@@ -24,3 +24,19 @@ export function extractLatestUserText(messages: unknown[]): string {
 export function normalizeMessages(value: unknown): unknown[] {
   return Array.isArray(value) ? value : []
 }
+
+export function nextStepSuggestion(intent: string): string {
+  if (intent === 'deep_dive' || intent === 'deep_dive_next') {
+    return 'Você pode aprovar uma linha sugerida para executar inquiry em seguida.'
+  }
+  if (intent === 'create_lead') {
+    return 'Próximo passo recomendado: executar inquiry no lead criado para validar evidências.'
+  }
+  if (intent === 'run_inquiry') {
+    return 'Revise alegações/findings no painel e decida quais itens devem ser confirmados ou rejeitados.'
+  }
+  if (intent === 'process_documents') {
+    return 'Com as fontes processadas, você pode pedir init ou iniciar um deep-dive.'
+  }
+  return 'Se quiser, peça um deep-dive, consulta rápida ou criação de lead investigativo.'
+}

@@ -6,7 +6,7 @@ import { resolveConfig } from '@/lib/config'
 import { persistChat } from '@/lib/chat-persistence'
 import { loadWorkflowSnapshot } from '@/lib/workflow-state'
 import type { ReversoUIMessage } from '@/types/ui-message'
-import { extractLatestUserText, normalizeMessages } from './route-helpers'
+import { extractLatestUserText, nextStepSuggestion, normalizeMessages } from './route-helpers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -14,22 +14,6 @@ export const dynamic = 'force-dynamic'
 interface ChatRequestBody {
   messages?: unknown[]
   autoAccept?: boolean
-}
-
-function nextStepSuggestion(intent: string): string {
-  if (intent === 'deep_dive' || intent === 'deep_dive_next') {
-    return 'Você pode aprovar uma linha sugerida para executar inquiry em seguida.'
-  }
-  if (intent === 'create_lead') {
-    return 'Próximo passo recomendado: executar inquiry no lead criado para validar evidências.'
-  }
-  if (intent === 'run_inquiry') {
-    return 'Revise alegações/findings no painel e decida quais itens devem ser confirmados ou rejeitados.'
-  }
-  if (intent === 'process_documents') {
-    return 'Com as fontes processadas, você pode pedir init ou iniciar um deep-dive.'
-  }
-  return 'Se quiser, peça um deep-dive, consulta rápida ou criação de lead investigativo.'
 }
 
 export async function POST(req: Request): Promise<Response> {
