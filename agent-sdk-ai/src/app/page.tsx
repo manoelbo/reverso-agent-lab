@@ -11,6 +11,11 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai'
 import type { ReversoUIMessage } from '@/types/ui-message'
+import { QueueProgress } from '@/components/chat/queue-progress'
+import { ToolCallDisplay } from '@/components/chat/tool-call-display'
+import { SourcesDisplay } from '@/components/chat/sources-display'
+import { LeadCard } from '@/components/chat/lead-card'
+import { AllegationDisplay } from '@/components/chat/allegation-display'
 
 function json(value: unknown): string {
   return JSON.stringify(value, null, 2)
@@ -292,17 +297,13 @@ export default function HomePage() {
                         gap: 8,
                       }}
                     >
-                      <div>
-                        <strong>Tool:</strong> {toolName}{' '}
-                        <span style={{ color: 'var(--muted)' }}>
-                          ({renderToolStateLabel(part.state)})
-                        </span>
-                      </div>
-
-                      <details>
-                        <summary>Input</summary>
-                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.input)}</pre>
-                      </details>
+                      <ToolCallDisplay
+                        toolName={toolName}
+                        stateLabel={renderToolStateLabel(part.state)}
+                        input={part.input}
+                        output={part.state === 'output-available' ? part.output : undefined}
+                        errorText={part.state === 'output-error' ? part.errorText : undefined}
+                      />
 
                       {part.state === 'approval-requested' ? (
                         <div style={{ display: 'flex', gap: 8 }}>
@@ -348,21 +349,63 @@ export default function HomePage() {
                         </div>
                       ) : null}
 
-                      {part.state === 'output-available' ? (
-                        <details open>
-                          <summary>Output</summary>
-                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.output)}</pre>
-                        </details>
-                      ) : null}
-
-                      {part.state === 'output-error' ? (
-                        <div style={{ color: 'var(--danger)' }}>Erro: {part.errorText}</div>
-                      ) : null}
-
                       {part.state === 'output-denied' ? (
                         <div style={{ color: '#efaaaa' }}>
                           Execução negada. Motivo: {part.approval.reason ?? 'Sem motivo informado.'}
                         </div>
+                      ) : null}
+
+                      {part.state === 'output-available' &&
+                      toolName === 'deepDive' &&
+                      Array.isArray((part.output as { topLeads?: unknown[] })?.topLeads) ? (
+                        <div style={{ display: 'grid', gap: 8 }}>
+                          {((part.output as { topLeads: unknown[] }).topLeads ?? []).map(
+                            (lead, leadIndex) => {
+                              if (typeof lead !== 'string') return null
+                              return (
+                                <LeadCard
+                                  key={`${leadIndex}-${lead}`}
+                                  title={lead}
+                                  onInvestigate={() => {
+                                    void sendMessage({
+                                      text: `Investigue o lead: ${lead}`,
+                                    })
+                                  }}
+                                  onReject={() => {
+                                    void sendMessage({
+                                      text: `Rejeitar lead sugerido: ${lead}`,
+                                    })
+                                  }}
+                                />
+                              )
+                            }
+                          )}
+                        </div>
+                      ) : null}
+
+                      {part.state === 'output-available' &&
+                      toolName === 'runInquiry' &&
+                      typeof (part.output as { lead?: unknown; evidenceGate?: unknown })
+                        ?.evidenceGate === 'object' &&
+                      (part.output as { evidenceGate: { verifiedFindings?: number; reviewQueue?: number } })
+                        .evidenceGate !== null ? (
+                        <AllegationDisplay
+                          lead={
+                            typeof (part.output as { lead?: unknown }).lead === 'string'
+                              ? (part.output as { lead: string }).lead
+                              : 'lead'
+                          }
+                          verifiedFindings={
+                            (part.output as {
+                              evidenceGate: { verifiedFindings?: number }
+                            }).evidenceGate.verifiedFindings ?? 0
+                          }
+                          reviewQueue={
+                            (part.output as {
+                              evidenceGate: { reviewQueue?: number }
+                            }).evidenceGate.reviewQueue ?? 0
+                          }
+                        />
                       ) : null}
                     </div>
                   )
@@ -386,32 +429,12 @@ export default function HomePage() {
 
                 if (isQueuePart(part)) {
                   return (
-                    <div
+                    <QueueProgress
                       key={idx}
-                      style={{
-                        background: '#1a1f2e',
-                        border: '1px solid #424f7a',
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
-                    >
-                      <strong>Fila ({part.data.currentStep + 1}/{part.data.totalSteps})</strong>
-                      <ol style={{ margin: '6px 0 0 18px' }}>
-                        {part.data.steps.map((step: string, stepIndex: number) => (
-                          <li
-                            key={stepIndex}
-                            style={{
-                              color:
-                                stepIndex === part.data.currentStep
-                                  ? '#b4d2ff'
-                                  : 'var(--muted)',
-                            }}
-                          >
-                            {step}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
+                      steps={part.data.steps}
+                      currentStep={part.data.currentStep}
+                      totalSteps={part.data.totalSteps}
+                    />
                   )
                 }
 
@@ -432,11 +455,7 @@ export default function HomePage() {
                 }
 
                 if (part.type.startsWith('source')) {
-                  return (
-                    <div key={idx} style={{ color: 'var(--muted)' }}>
-                      Fonte: {json(part)}
-                    </div>
-                  )
+                  return <SourcesDisplay key={idx} source={part} />
                 }
 
                 const unhandledType =
