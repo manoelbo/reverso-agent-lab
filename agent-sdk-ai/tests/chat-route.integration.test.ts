@@ -315,4 +315,34 @@ describe('/api/chat route integration', () => {
     assert.ok(steps.some((step) => step.includes('sessão deep-dive ativa')))
     assert.ok(steps.some((step) => step.includes('Atender intenção: deep_dive_next')))
   })
+
+  it('usa fallback general_chat quando classificação por modelo falha', async () => {
+    const filesystemRoot = await prepareFilesystemRoot()
+    const legacyRoot = await mkdtemp(path.join(os.tmpdir(), 'reverso-chat-legacy-'))
+    process.env['REVERSO_FILESYSTEM_ROOT'] = filesystemRoot
+    process.env['REVERSO_LEGACY_ROOT'] = legacyRoot
+    process.env['AI_GATEWAY_API_KEY'] = ''
+    process.env['OPENROUTER_API_KEY'] = ''
+
+    const request = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: createUserMessage('blorb glif narf'),
+        autoAccept: false,
+      }),
+    })
+
+    const response = await POST(request)
+    const payload = await response.text()
+    const parts = parseStreamDataParts(payload)
+    const startPart = parts.find((part) => part.type === 'start') as
+      | { messageMetadata?: { intent?: string } }
+      | undefined
+    const queueSteps = firstQueuePart(payload)?.data?.steps ?? []
+
+    assert.equal(response.status, 200)
+    assert.equal(startPart?.messageMetadata?.intent, 'general_chat')
+    assert.ok(queueSteps.some((step) => step.includes('Atender intenção: general_chat')))
+  })
 })
