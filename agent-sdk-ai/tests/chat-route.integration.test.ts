@@ -105,6 +105,16 @@ describe('/api/chat route integration', () => {
     const sourceStatePart = parts.find((part) => part.type === 'data-sourceState') as
       | { data?: { sourceEmpty?: boolean; processed?: number; pending?: number; failed?: number } }
       | undefined
+    const summaryPart = parts.find(
+      (part) =>
+        part.type === 'data-workflow' &&
+        (part as { data?: { phase?: string } }).data?.phase === 'summary'
+    ) as { data?: { message?: string } } | undefined
+    const nextStepSuggestion = [...parts]
+      .reverse()
+      .find((part) => part.type === 'data-suggestion') as
+      | { data?: { title?: string; action?: string } }
+      | undefined
 
     assert.equal(response.status, 200)
     assert.ok(payload.includes('"type":"data-workflow"'))
@@ -119,6 +129,9 @@ describe('/api/chat route integration', () => {
     )
     assert.equal(sourceStatePart?.data?.sourceEmpty, true)
     assert.equal(sourceStatePart?.data?.processed, 0)
+    assert.ok((summaryPart?.data?.message ?? '').includes('Fluxo concluído'))
+    assert.equal(nextStepSuggestion?.data?.title, 'Próximos passos')
+    assert.ok((nextStepSuggestion?.data?.action ?? '').length > 5)
   })
 
   it('reflete auto-accept ativo na sugestão de aprovação', async () => {

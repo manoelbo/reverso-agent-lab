@@ -16,6 +16,22 @@ interface ChatRequestBody {
   autoAccept?: boolean
 }
 
+function nextStepSuggestion(intent: string): string {
+  if (intent === 'deep_dive' || intent === 'deep_dive_next') {
+    return 'Você pode aprovar uma linha sugerida para executar inquiry em seguida.'
+  }
+  if (intent === 'create_lead') {
+    return 'Próximo passo recomendado: executar inquiry no lead criado para validar evidências.'
+  }
+  if (intent === 'run_inquiry') {
+    return 'Revise alegações/findings no painel e decida quais itens devem ser confirmados ou rejeitados.'
+  }
+  if (intent === 'process_documents') {
+    return 'Com as fontes processadas, você pode pedir init ou iniciar um deep-dive.'
+  }
+  return 'Se quiser, peça um deep-dive, consulta rápida ou criação de lead investigativo.'
+}
+
 export async function POST(req: Request): Promise<Response> {
   const config = resolveConfig()
   const body = (await req.json()) as ChatRequestBody
@@ -141,7 +157,28 @@ export async function POST(req: Request): Promise<Response> {
         },
       })
 
-      writer.merge(agentStream)
+      const reader = agentStream.getReader()
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        writer.write(value)
+      }
+
+      writer.write({
+        type: 'data-workflow',
+        data: {
+          phase: 'summary',
+          message: `Fluxo concluído para intenção: ${workflow.intent.intent}.`,
+        },
+      })
+
+      writer.write({
+        type: 'data-suggestion',
+        data: {
+          title: 'Próximos passos',
+          action: nextStepSuggestion(workflow.intent.intent),
+        },
+      })
     },
   })
 
