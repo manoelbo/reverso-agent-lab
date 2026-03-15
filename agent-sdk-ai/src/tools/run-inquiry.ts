@@ -7,6 +7,35 @@ import { validateWithSelfRepair } from '@/lib/self-repair'
 import { applyEvidenceGate } from '@/lib/evidence-gate'
 import { resolveCriticalWriteGateDecision } from '@/lib/critical-write-gate'
 import { extractJsonCandidate } from '@/lib/format-parsers'
+import type { InquiryFinalPayload } from '@/lib/contracts'
+
+function toInquirySummary(
+  validated: InquiryFinalPayload,
+  gate: ReturnType<typeof applyEvidenceGate>
+): {
+  allegations: Array<{ id: string; statement: string }>
+  verifiedFindings: Array<{ id: string; claim: string }>
+  reviewFindings: Array<{ id: string; claim: string }>
+  scenario: string
+  confidence: number
+} {
+  return {
+    allegations: validated.allegations.map((item) => ({
+      id: item.id,
+      statement: item.statement,
+    })),
+    verifiedFindings: gate.verified.map((item) => ({
+      id: item.id,
+      claim: item.claim,
+    })),
+    reviewFindings: gate.reviewQueue.map((item) => ({
+      id: item.id,
+      claim: item.claim,
+    })),
+    scenario: validated.scenario,
+    confidence: validated.confidence,
+  }
+}
 
 export const runInquiryTool = tool({
   description:
@@ -33,6 +62,15 @@ export const runInquiryTool = tool({
       scenario?: string
       confidence?: number
     } | null = null
+    let inquirySummary:
+      | {
+          allegations: Array<{ id: string; statement: string }>
+          verifiedFindings: Array<{ id: string; claim: string }>
+          reviewFindings: Array<{ id: string; claim: string }>
+          scenario: string
+          confidence: number
+        }
+      | null = null
 
     if (jsonCandidate) {
       const validated = await validateWithSelfRepair({
@@ -53,6 +91,7 @@ export const runInquiryTool = tool({
           scenario: validated.value.scenario,
           confidence: validated.value.confidence,
         }
+        inquirySummary = toInquirySummary(validated.value, gate)
       }
     }
 
@@ -72,6 +111,7 @@ export const runInquiryTool = tool({
       stdout: compactOutput(result.stdout, 2600),
       elapsedMs: result.elapsedMs,
       evidenceGate,
+      inquirySummary,
       criticalWriteGate,
     }
   },

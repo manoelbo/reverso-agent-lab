@@ -17,6 +17,12 @@ import { SourcesDisplay } from '@/components/chat/sources-display'
 import { LeadCard } from '@/components/chat/lead-card'
 import { AllegationDisplay } from '@/components/chat/allegation-display'
 
+interface InquirySummary {
+  allegations: Array<{ id: string; statement: string }>
+  verifiedFindings: Array<{ id: string; claim: string }>
+  reviewFindings: Array<{ id: string; claim: string }>
+}
+
 function json(value: unknown): string {
   return JSON.stringify(value, null, 2)
 }
@@ -389,23 +395,55 @@ export default function HomePage() {
                         ?.evidenceGate === 'object' &&
                       (part.output as { evidenceGate: { verifiedFindings?: number; reviewQueue?: number } })
                         .evidenceGate !== null ? (
-                        <AllegationDisplay
-                          lead={
-                            typeof (part.output as { lead?: unknown }).lead === 'string'
-                              ? (part.output as { lead: string }).lead
-                              : 'lead'
+                        (() => {
+                          const output = part.output as {
+                            lead?: unknown
+                            evidenceGate: { verifiedFindings?: number; reviewQueue?: number }
+                            inquirySummary?: unknown
                           }
+                          const summary =
+                            typeof output.inquirySummary === 'object' &&
+                            output.inquirySummary !== null
+                              ? (output.inquirySummary as InquirySummary)
+                              : undefined
+                          const leadSlug =
+                            typeof output.lead === 'string' ? output.lead : 'lead'
+
+                          return (
+                        <AllegationDisplay
+                          lead={leadSlug}
                           verifiedFindings={
-                            (part.output as {
-                              evidenceGate: { verifiedFindings?: number }
-                            }).evidenceGate.verifiedFindings ?? 0
+                            output.evidenceGate.verifiedFindings ?? 0
                           }
                           reviewQueue={
-                            (part.output as {
-                              evidenceGate: { reviewQueue?: number }
-                            }).evidenceGate.reviewQueue ?? 0
+                            output.evidenceGate.reviewQueue ?? 0
                           }
+                          allegations={summary?.allegations ?? []}
+                          verifiedItems={summary?.verifiedFindings ?? []}
+                          reviewItems={summary?.reviewFindings ?? []}
+                          onAcceptAllegation={(allegationId) => {
+                            void sendMessage({
+                              text: `Aceitar alegação ${allegationId} do lead ${leadSlug}.`,
+                            })
+                          }}
+                          onRejectAllegation={(allegationId) => {
+                            void sendMessage({
+                              text: `Recusar alegação ${allegationId} do lead ${leadSlug}.`,
+                            })
+                          }}
+                          onVerifyFinding={(findingId) => {
+                            void sendMessage({
+                              text: `Verificar finding ${findingId} do lead ${leadSlug}.`,
+                            })
+                          }}
+                          onRejectFinding={(findingId) => {
+                            void sendMessage({
+                              text: `Rejeitar finding ${findingId} do lead ${leadSlug}.`,
+                            })
+                          }}
                         />
+                          )
+                        })()
                       ) : null}
                     </div>
                   )
