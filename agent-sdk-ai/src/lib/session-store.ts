@@ -20,6 +20,20 @@ export interface DeepDiveSession {
   updatedAt?: string
 }
 
+function resolveDeepDiveSessionTtlMs(): number {
+  const value = Number(process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] ?? 72 * 60 * 60 * 1000)
+  if (!Number.isFinite(value) || value <= 0) return 72 * 60 * 60 * 1000
+  return value
+}
+
+function isSessionExpired(session: DeepDiveSession, nowMs = Date.now()): boolean {
+  if (!session.updatedAt) return false
+  const updatedAt = Date.parse(session.updatedAt)
+  if (!Number.isFinite(updatedAt)) return false
+  const ttlMs = resolveDeepDiveSessionTtlMs()
+  return nowMs - updatedAt > ttlMs
+}
+
 function chatSessionPath(paths: ReversoPaths): string {
   return path.join(paths.filesystemRoot, 'sessions', 'sdk-chat', 'default.json')
 }
@@ -77,7 +91,9 @@ export async function loadActiveDeepDiveSession(
   const raw = await readUtf8(sessionPath ?? legacyPath)
   if (!raw) return undefined
   try {
-    return JSON.parse(raw) as DeepDiveSession
+    const parsed = JSON.parse(raw) as DeepDiveSession
+    if (isSessionExpired(parsed)) return undefined
+    return parsed
   } catch {
     return undefined
   }

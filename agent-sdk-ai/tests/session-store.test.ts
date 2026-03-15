@@ -74,4 +74,41 @@ describe('session-store', () => {
     const session = await loadActiveDeepDiveSession(paths)
     assert.equal(session?.stage, 'completed')
   })
+
+  it('ignora sessão deep-dive expirada pelo TTL', async () => {
+    const previousTtl = process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+    process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = '1000'
+    try {
+      const paths = await createPaths()
+      const sessionDir = path.join(paths.filesystemRoot, 'sessions', 'deep-dive')
+      await mkdir(sessionDir, { recursive: true })
+      await writeFile(
+        path.join(sessionDir, 'active-session.json'),
+        JSON.stringify({ sessionId: 'old-session' }, null, 2),
+        'utf8'
+      )
+      await writeFile(
+        path.join(sessionDir, 'old-session.json'),
+        JSON.stringify(
+          {
+            stage: 'awaiting_plan_decision',
+            sessionId: 'old-session',
+            updatedAt: '2000-01-01T00:00:00.000Z',
+          },
+          null,
+          2
+        ),
+        'utf8'
+      )
+
+      const session = await loadActiveDeepDiveSession(paths)
+      assert.equal(session, undefined)
+    } finally {
+      if (previousTtl === undefined) {
+        delete process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+      } else {
+        process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = previousTtl
+      }
+    }
+  })
 })

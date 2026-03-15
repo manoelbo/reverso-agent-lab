@@ -21,6 +21,7 @@ export interface ReversoConfig {
   modelId: string
   autoAcceptDefault: boolean
   providerMode: 'gateway' | 'openrouter'
+  deepDiveSessionTtlMs: number
 }
 
 function asBool(value: string | undefined, fallback: boolean): boolean {
@@ -58,10 +59,16 @@ export function resolveConfig(): ReversoConfig {
     dossierDir: path.join(filesystemRoot, 'dossier'),
   }
 
+  const ttlFromEnv = Number(process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] ?? 72 * 60 * 60 * 1000)
+  const deepDiveSessionTtlMs = Number.isFinite(ttlFromEnv) && ttlFromEnv > 0
+    ? ttlFromEnv
+    : 72 * 60 * 60 * 1000
+
   return {
     paths,
     modelId: process.env['REVERSO_MODEL_ID'] ?? 'google/gemini-2.5-flash',
     autoAcceptDefault: asBool(process.env['REVERSO_AUTO_ACCEPT_DEFAULT'], false),
     providerMode: process.env['OPENROUTER_API_KEY'] ? 'openrouter' : 'gateway',
+    deepDiveSessionTtlMs,
   }
 }

@@ -36,4 +36,34 @@ describe('resolveConfig', () => {
       }
     }
   })
+
+  it('aplica TTL de sessão deep-dive configurável', () => {
+    const originalTtl = process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+    try {
+      process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = '5000'
+      const config = resolveConfig()
+      assert.equal(config.deepDiveSessionTtlMs, 5000)
+    } finally {
+      if (originalTtl === undefined) {
+        delete process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+      } else {
+        process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = originalTtl
+      }
+    }
+  })
+
+  it('usa TTL default quando valor configurado é inválido', () => {
+    const originalTtl = process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+    try {
+      process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = 'invalido'
+      const config = resolveConfig()
+      assert.equal(config.deepDiveSessionTtlMs, 72 * 60 * 60 * 1000)
+    } finally {
+      if (originalTtl === undefined) {
+        delete process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS']
+      } else {
+        process.env['REVERSO_DEEP_DIVE_SESSION_TTL_MS'] = originalTtl
+      }
+    }
+  })
 })
