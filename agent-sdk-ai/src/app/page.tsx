@@ -1,0 +1,419 @@
+'use client'
+
+import { FormEvent, useMemo, useState } from 'react'
+import { useChat } from '@ai-sdk/react'
+import {
+  DefaultChatTransport,
+  isReasoningUIPart,
+  isTextUIPart,
+  isToolUIPart,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from 'ai'
+
+function json(value: unknown): string {
+  return JSON.stringify(value, null, 2)
+}
+
+function renderToolStateLabel(state: string): string {
+  switch (state) {
+    case 'input-streaming':
+      return 'recebendo input'
+    case 'input-available':
+      return 'input pronto'
+    case 'approval-requested':
+      return 'aguardando aprovação'
+    case 'approval-responded':
+      return 'aprovação respondida'
+    case 'output-available':
+      return 'concluído'
+    case 'output-error':
+      return 'erro'
+    case 'output-denied':
+      return 'negado'
+    default:
+      return state
+  }
+}
+
+export default function HomePage() {
+  const [input, setInput] = useState('')
+  const [files, setFiles] = useState<FileList | null>(null)
+  const [uploadInfo, setUploadInfo] = useState<string>('')
+  const [autoAccept, setAutoAccept] = useState(false)
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: '/api/chat',
+        body: {
+          autoAccept,
+        },
+      }),
+    [autoAccept]
+  )
+
+  const {
+    messages,
+    status,
+    error,
+    sendMessage,
+    stop,
+    addToolApprovalResponse,
+  } = useChat({
+    transport,
+    sendAutomaticallyWhen: (options) =>
+      lastAssistantMessageIsCompleteWithToolCalls(options) ||
+      lastAssistantMessageIsCompleteWithApprovalResponses(options),
+  })
+
+  const handleUpload = async (): Promise<string> => {
+    if (!files || files.length === 0) return ''
+
+    const formData = new FormData()
+    for (const file of Array.from(files)) {
+      formData.append('files', file)
+    }
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const payload = (await response.json()) as {
+      accepted: string[]
+      rejected: Array<{ fileName: string; reason: string }>
+    }
+
+    const summary = [
+      payload.accepted.length > 0
+        ? `${payload.accepted.length} arquivo(s) aceito(s): ${payload.accepted.join(', ')}`
+        : 'Nenhum arquivo aceito.',
+      payload.rejected.length > 0
+        ? `Rejeitados: ${payload.rejected.map((r) => `${r.fileName} (${r.reason})`).join(', ')}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+
+    setUploadInfo(summary)
+    return summary
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (status !== 'ready') return
+
+    let uploadSummary = ''
+    if (files && files.length > 0) {
+      uploadSummary = await handleUpload()
+      setFiles(null)
+    }
+
+    const normalizedInput = input.trim()
+    const textToSend =
+      normalizedInput ||
+      (uploadSummary
+        ? `Acabei de enviar arquivos PDF. ${uploadSummary}. Siga o workflow investigativo.`
+        : '')
+
+    if (!textToSend) return
+
+    await sendMessage({
+      text: textToSend,
+    })
+    setInput('')
+  }
+
+  return (
+    <main
+      style={{
+        maxWidth: 1100,
+        margin: '0 auto',
+        padding: 20,
+        display: 'grid',
+        gap: 12,
+      }}
+    >
+      <header
+        style={{
+          background: 'var(--panel)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: 14,
+        }}
+      >
+        <h1 style={{ margin: 0 }}>Reverso (AI SDK)</h1>
+        <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>
+          Workflow state-aware, tools nativas, approvals e processamento externo de PDFs.
+        </p>
+        <label style={{ display: 'inline-flex', gap: 8, marginTop: 10, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={autoAccept}
+            onChange={(event) => setAutoAccept(event.target.checked)}
+          />
+          Auto-accept de ações sensíveis
+        </label>
+      </header>
+
+      <section
+        style={{
+          background: 'var(--panel)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: 14,
+          minHeight: 420,
+          overflow: 'auto',
+        }}
+      >
+        {messages.length === 0 ? (
+          <p style={{ color: 'var(--muted)' }}>
+            Envie uma mensagem (ou PDFs) para iniciar a investigação.
+          </p>
+        ) : null}
+
+        {messages.map((message) => (
+          <article key={message.id} style={{ marginBottom: 16 }}>
+            <div
+              style={{
+                fontWeight: 600,
+                marginBottom: 8,
+                color: message.role === 'user' ? '#8db9ff' : '#f0f3f7',
+              }}
+            >
+              {message.role === 'user' ? 'Você' : 'Reverso'}
+            </div>
+
+            <div style={{ display: 'grid', gap: 8 }}>
+              {message.parts.map((part, idx) => {
+                if (isTextUIPart(part)) {
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        whiteSpace: 'pre-wrap',
+                        background: '#11141a',
+                        border: '1px solid var(--border)',
+                        borderRadius: 8,
+                        padding: 10,
+                      }}
+                    >
+                      {part.text}
+                    </div>
+                  )
+                }
+
+                if (isReasoningUIPart(part)) {
+                  return (
+                    <details
+                      key={idx}
+                      style={{
+                        background: '#12151c',
+                        border: '1px dashed var(--border)',
+                        borderRadius: 8,
+                        padding: 8,
+                      }}
+                    >
+                      <summary style={{ cursor: 'pointer' }}>Raciocínio do modelo</summary>
+                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{part.text}</pre>
+                    </details>
+                  )
+                }
+
+                if (isToolUIPart(part)) {
+                  const toolName = part.type.replace('tool-', '')
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#11141a',
+                        border: '1px solid #2a3140',
+                        borderRadius: 8,
+                        padding: 10,
+                        display: 'grid',
+                        gap: 8,
+                      }}
+                    >
+                      <div>
+                        <strong>Tool:</strong> {toolName}{' '}
+                        <span style={{ color: 'var(--muted)' }}>
+                          ({renderToolStateLabel(part.state)})
+                        </span>
+                      </div>
+
+                      <details>
+                        <summary>Input</summary>
+                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.input)}</pre>
+                      </details>
+
+                      {part.state === 'approval-requested' ? (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addToolApprovalResponse({
+                                id: part.approval.id,
+                                approved: true,
+                              })
+                            }
+                            style={{
+                              borderRadius: 8,
+                              border: '1px solid #2d8756',
+                              background: '#1f6b45',
+                              color: 'white',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Aprovar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addToolApprovalResponse({
+                                id: part.approval.id,
+                                approved: false,
+                                reason: 'Operação negada pelo usuário.',
+                              })
+                            }
+                            style={{
+                              borderRadius: 8,
+                              border: '1px solid #9d4343',
+                              background: '#7f3232',
+                              color: 'white',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Negar
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {part.state === 'output-available' ? (
+                        <details open>
+                          <summary>Output</summary>
+                          <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.output)}</pre>
+                        </details>
+                      ) : null}
+
+                      {part.state === 'output-error' ? (
+                        <div style={{ color: 'var(--danger)' }}>Erro: {part.errorText}</div>
+                      ) : null}
+
+                      {part.state === 'output-denied' ? (
+                        <div style={{ color: '#efaaaa' }}>
+                          Execução negada. Motivo: {part.approval.reason ?? 'Sem motivo informado.'}
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                }
+
+                if (part.type.startsWith('data-') && 'data' in part) {
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        background: '#121825',
+                        border: '1px solid #2c3b56',
+                        borderRadius: 8,
+                        padding: 8,
+                      }}
+                    >
+                      <strong>{part.type}</strong>
+                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{json(part.data)}</pre>
+                    </div>
+                  )
+                }
+
+                if (part.type.startsWith('source')) {
+                  return (
+                    <div key={idx} style={{ color: 'var(--muted)' }}>
+                      Fonte: {json(part)}
+                    </div>
+                  )
+                }
+
+                return (
+                  <div key={idx} style={{ color: 'var(--muted)' }}>
+                    Parte não renderizada: {part.type}
+                  </div>
+                )
+              })}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'grid',
+          gap: 10,
+          background: 'var(--panel)',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: 14,
+        }}
+      >
+        <textarea
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder="Peça deep-dive, inquiry, quick research ou consulte dados..."
+          rows={4}
+          style={{
+            width: '100%',
+            resize: 'vertical',
+            background: '#10131a',
+            color: 'var(--text)',
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: 10,
+          }}
+        />
+
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="file"
+            multiple
+            accept="application/pdf"
+            onChange={(event) => setFiles(event.target.files)}
+          />
+          <button
+            type="submit"
+            disabled={status !== 'ready'}
+            style={{
+              borderRadius: 8,
+              border: '1px solid #316aa8',
+              background: '#24598f',
+              color: 'white',
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Enviar
+          </button>
+          <button
+            type="button"
+            onClick={() => stop()}
+            style={{
+              borderRadius: 8,
+              border: '1px solid #5a6376',
+              background: '#3d4453',
+              color: 'white',
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Interromper stream
+          </button>
+          <span style={{ color: 'var(--muted)' }}>status: {status}</span>
+        </div>
+
+        {uploadInfo ? <div style={{ color: '#9dc6ff' }}>{uploadInfo}</div> : null}
+        {error ? <div style={{ color: 'var(--danger)' }}>{error.message}</div> : null}
+      </form>
+    </main>
+  )
+}
