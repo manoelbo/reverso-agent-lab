@@ -66,4 +66,39 @@ describe('detectSystemState', () => {
     assert.equal(state.hasAgentContext, true)
     assert.equal(state.leadsCount, 1)
   })
+
+  it('marca previews sem init quando há processado mas não existe agent.md', async () => {
+    const paths = await setupPaths()
+
+    await writeFile(path.join(paths.sourceDir, 'doc.pdf'), '')
+    await writeFile(
+      path.join(paths.sourceDir, 'source-checkpoint.json'),
+      JSON.stringify(
+        {
+          files: [{ docId: 'doc', originalFileName: 'doc.pdf', status: 'done' }],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    )
+
+    const state = await detectSystemState(paths)
+    assert.equal(state.sourceEmpty, false)
+    assert.equal(state.processedFiles.length, 1)
+    assert.equal(state.hasAgentContext, false)
+    assert.equal(state.hasPreviewsWithoutInit, true)
+    assert.equal(state.isFirstVisit, true)
+  })
+
+  it('detecta source vazio quando não há PDFs', async () => {
+    const paths = await setupPaths()
+    const state = await detectSystemState(paths)
+
+    assert.equal(state.sourceEmpty, true)
+    assert.equal(state.totalSourceFiles, 0)
+    assert.equal(state.processedFiles.length, 0)
+    assert.equal(state.unprocessedFiles.length, 0)
+    assert.equal(state.failedFiles.length, 0)
+  })
 })
